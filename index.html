@@ -23,6 +23,7 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
+  [id^="zone-"] { scroll-margin-top: 24px; }
   body {
     font-family: var(--font-sans);
     background: var(--bg);
@@ -35,9 +36,9 @@
   .mono { font-family: var(--font-mono); font-feature-settings: "tnum"; }
 
   .doc {
-    max-width: 960px;
+    max-width: 1240px;
     margin: 0 auto;
-    padding: 56px 64px 96px;
+    padding: 56px 72px 96px;
   }
 
   /* document header */
@@ -70,27 +71,243 @@
     letter-spacing: 0.04em;
   }
 
+  /* ─ Floating Mini-map (네비게이션) ─ */
+  .minimap {
+    position: fixed;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: padding 0.2s ease, right 0.2s ease;
+  }
+  .minimap:hover {
+    padding: 14px 16px;
+  }
+  .minimap-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 5px 0;
+    text-decoration: none;
+    color: var(--ink-3);
+    transition: color 0.15s ease;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .minimap-item:hover {
+    color: var(--ink);
+  }
+  .minimap-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    border: 1px solid var(--ink-3);
+    background: transparent;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+  }
+  .minimap-label {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-width 0.25s ease, opacity 0.2s ease;
+  }
+  .minimap:hover .minimap-label {
+    max-width: 140px;
+    opacity: 1;
+  }
+  .minimap-item.active {
+    color: var(--ink);
+  }
+  .minimap-item.active .minimap-dot {
+    background: var(--ink);
+    border-color: var(--ink);
+    width: 8px;
+    height: 8px;
+  }
+  .minimap-item.active .minimap-label {
+    font-weight: 700;
+  }
+  .minimap-divider {
+    height: 1px;
+    background: var(--line);
+    margin: 8px 0 6px;
+  }
+  .minimap-action {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 0;
+    text-decoration: none;
+    color: var(--ink-3);
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-family: var(--font-mono);
+    transition: color 0.15s ease;
+    white-space: nowrap;
+    text-align: left;
+  }
+  .minimap-action:hover { color: var(--ink); }
+  .minimap-action-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1px dashed var(--ink-3);
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+  }
+  .minimap-action:hover .minimap-action-dot {
+    border-style: solid;
+    border-color: var(--ink);
+  }
+  .minimap-action-label {
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-width 0.25s ease, opacity 0.2s ease;
+  }
+  .minimap:hover .minimap-action-label {
+    max-width: 140px;
+    opacity: 1;
+  }
+
+  /* 모바일: 미니맵 숨김 */
+  @media (max-width: 1100px) {
+    .minimap { display: none; }
+  }
+
+  /* 인쇄 시 숨김 */
+  @media print {
+    .minimap { display: none; }
+  }
+
+  /* ─ TOC (목차) ─ */
+  .toc {
+    margin: 32px 0 28px;
+    border: 1px solid var(--ink);
+    background: var(--bg);
+  }
+  .toc-head {
+    padding: 14px 22px;
+    background: var(--ink);
+    color: #fff;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .toc-head-title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .toc-head-meta {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: rgba(255,255,255,0.65);
+    letter-spacing: 0.06em;
+  }
+  .toc-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+  }
+  .toc-item {
+    display: flex;
+    flex-direction: column;
+    padding: 18px 18px 16px;
+    border-right: 1px solid var(--line);
+    text-decoration: none;
+    color: inherit;
+    background: var(--bg);
+    transition: background 0.15s ease;
+    position: relative;
+  }
+  .toc-item:last-child { border-right: none; }
+  .toc-item:hover { background: #fafafa; }
+  .toc-item-tag {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    font-weight: 700;
+    color: var(--ink-3);
+    letter-spacing: 0.12em;
+    margin-bottom: 6px;
+  }
+  .toc-item-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 8px;
+    line-height: 1.35;
+  }
+  .toc-item-desc {
+    font-size: 11px;
+    color: var(--ink-3);
+    line-height: 1.55;
+    margin-bottom: 10px;
+    flex: 1;
+  }
+  .toc-item-list {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    color: var(--ink-2);
+    letter-spacing: 0.04em;
+    line-height: 1.7;
+    padding-top: 10px;
+    border-top: 1px dashed var(--line);
+  }
+  .toc-item-list strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* TOC 모바일 */
+  @media (max-width: 760px) {
+    .toc-grid { grid-template-columns: 1fr; }
+    .toc-item { border-right: none; border-bottom: 1px solid var(--line); }
+    .toc-item:last-child { border-bottom: none; }
+  }
+
   /* AI disclaimer */
   .disclaimer {
     display: flex;
     align-items: flex-start;
     gap: 14px;
     padding: 14px 18px;
-    background: #fdf6e3;
-    border: 1px solid #ead9a8;
-    border-left: 3px solid #b87a1a;
+    background: #f7f7f7;
+    border: 1px solid #ddd;
+    border-left: 3px solid #555;
     border-radius: 2px;
     margin-bottom: 24px;
   }
   .disclaimer-tag {
     font-size: 10px;
     font-weight: 700;
-    color: #8a5400;
+    color: #555;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     padding: 4px 8px;
     background: #fff;
-    border: 1px solid #ead9a8;
+    border: 1px solid #ddd;
     border-radius: 2px;
     white-space: nowrap;
     flex-shrink: 0;
@@ -120,6 +337,7 @@
     font-size: 14.5px;
     color: var(--ink-2);
     line-height: 1.75;
+    max-width: 980px;
   }
   .summary p strong { color: var(--ink); font-weight: 600; }
 
@@ -230,7 +448,7 @@
     text-transform: uppercase;
   }
 
-  /* sub section header (안에서 § 2.1 같은거) */
+  /* sub section header (안에서 2.1 같은거) */
   .sub-h {
     display: grid;
     grid-template-columns: auto 1fr;
@@ -267,27 +485,28 @@
     color: var(--ink-2);
     line-height: 1.75;
     margin-bottom: 24px;
-    max-width: 760px;
+    max-width: 920px;
   }
   .sec-intro strong { color: var(--ink); font-weight: 600; }
 
   /* takeaway */
   .takeaway {
     margin-top: 16px;
-    padding: 16px 20px;
-    background: var(--paper);
-    border-left: 2px solid var(--ink);
+    padding: 14px 18px;
+    background: #fafafa;
+    border-left: 2px solid var(--ink-3);
     font-size: 12.5px;
     color: var(--ink-2);
     line-height: 1.7;
   }
   .takeaway-label {
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: 9.5px;
     color: var(--ink-3);
-    letter-spacing: 0.1em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     margin-bottom: 6px;
+    font-weight: 600;
   }
   .takeaway strong { color: var(--ink); font-weight: 600; }
 
@@ -417,17 +636,230 @@
     line-height: 1.6;
   }
   .bigbet-row-content strong { color: var(--ink); font-weight: 600; }
-  .bigbet-foot {
-    margin-top: auto;
-    padding: 14px 18px;
-    border-top: 1px solid var(--line-strong);
-    background: var(--paper);
+
+
+  /* ─ Gantt 타임라인 ─ */
+  .gantt {
+    border: 1px solid var(--ink);
+    background: var(--bg);
+    padding: 22px 24px;
+    margin: 24px 0;
+    overflow-x: auto;
+  }
+  .gantt-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    gap: 16px;
+  }
+  .gantt-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .gantt-legend {
+    display: flex;
+    gap: 16px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+  }
+  .gantt-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .gantt-legend-swatch {
+    display: inline-block;
+    width: 12px;
+    height: 8px;
+    border-radius: 1px;
+  }
+  .gantt-svg {
+    width: 100%;
+    min-width: 880px;
+    display: block;
+  }
+
+  /* ─ PBR 시나리오 차트 ─ */
+  .pbr-chart {
+    border: 1px solid var(--ink);
+    background: var(--bg);
+    padding: 24px 28px;
+    margin: 24px 0;
+  }
+  .pbr-chart-head {
+    margin-bottom: 16px;
+  }
+  .pbr-chart-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .pbr-chart-sub {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+  }
+  .pbr-chart-svg {
+    width: 100%;
+    min-width: 720px;
+    display: block;
+    margin-bottom: 14px;
+  }
+  .pbr-chart-foot {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    border-top: 1px solid var(--line);
+    padding-top: 14px;
+  }
+  .pbr-stage {
+    padding: 4px 0;
+  }
+  .pbr-stage-when {
     font-family: var(--font-mono);
     font-size: 10px;
     font-weight: 700;
     color: var(--ink);
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .pbr-stage-pbr {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .pbr-stage-note {
+    font-size: 11px;
+    color: var(--ink-3);
+    line-height: 1.4;
+  }
+
+  /* ─ Big Bet 한 줄 결론 (두괄식) ─ */
+  .bigbet-lead {
+    padding: 12px 18px;
+    background: #fafafa;
+    border-bottom: 1px solid var(--line-strong);
+    font-size: 12px;
+    color: var(--ink-2);
+    line-height: 1.55;
+  }
+  .bigbet-lead strong { color: var(--ink); font-weight: 600; }
+
+  /* ─ Big Bet 2×2 임팩트 매트릭스 ─ */
+  .impact-matrix {
+    border: 1px solid var(--ink);
+    background: var(--bg);
+    padding: 24px 28px;
+    margin: 24px 0;
+  }
+  .impact-matrix-head {
+    margin-bottom: 16px;
+  }
+  .impact-matrix-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .impact-matrix-sub {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+  }
+  .impact-matrix-svg {
+    width: 100%;
+    min-width: 580px;
+    display: block;
+  }
+
+  /* ─ TL;DR 박스 (진단 영역 두괄식) ─ */
+  .tldr {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 16px;
+    align-items: start;
+    padding: 14px 18px;
+    background: var(--paper);
+    border-left: 2px solid var(--ink);
+    margin: 0 0 24px;
+  }
+  .tldr-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding-top: 1px;
+  }
+  .tldr-content {
+    font-size: 12.5px;
+    color: var(--ink-2);
+    line-height: 1.65;
+  }
+  .tldr-content strong { color: var(--ink); font-weight: 600; }
+
+  /* ─ Collapsible 진단 상세 ─ */
+  details.diag {
+    border: 1px solid var(--line);
+    margin: 16px 0;
+    background: var(--bg);
+  }
+  details.diag > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 14px 18px;
+    background: #fafafa;
+    border-bottom: 1px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12.5px;
+    color: var(--ink-2);
+    font-weight: 500;
+    transition: background 0.15s ease;
+    user-select: none;
+  }
+  details.diag > summary:hover { background: #f0f0f0; }
+  details.diag > summary::-webkit-details-marker { display: none; }
+  details.diag > summary::after {
+    content: "+";
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--ink-3);
+    margin-left: 12px;
+    transition: transform 0.2s ease;
+  }
+  details.diag[open] > summary { border-bottom-color: var(--line); background: var(--bg); }
+  details.diag[open] > summary::after { content: "−"; }
+  details.diag-content {
+    padding: 16px 18px 8px;
+  }
+  details.diag .diag-tag {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    font-weight: 700;
+    color: var(--ink-3);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-right: 10px;
+  }
+  details.diag .diag-count {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
   }
 
   /* Roadmap (12개월 액션 플랜) */
@@ -567,6 +999,24 @@
   }
   .scqa:last-child .scqa-content { border-bottom: none; padding-bottom: 0; }
   .scqa-content strong { color: var(--ink); font-weight: 600; }
+
+  /* SCQA Answer 강조 (두괄식) */
+  .scqa.scqa-answer {
+    margin: 12px -24px -22px;
+    padding: 20px 24px;
+    background: var(--ink);
+    grid-template-columns: 100px 1fr;
+  }
+  .scqa.scqa-answer .scqa-label {
+    color: #ffffff;
+    border-right-color: rgba(255,255,255,0.25);
+  }
+  .scqa.scqa-answer .scqa-content {
+    color: rgba(255,255,255,0.92);
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  .scqa.scqa-answer .scqa-content strong { color: #ffffff; }
 
   /* Big Bet Zone label override (적은 강조) */
   .zone-label.bigbet-zone .zone-label-tag {
@@ -776,23 +1226,23 @@
     display: inline-block;
   }
   .status.done {
-    color: #1c5d3a;
-    background: #f0f7ed;
-    border-color: #c2dec8;
+    color: #111;
+    background: #ffffff;
+    border-color: #111;
   }
-  .status.done::before { background: #1c5d3a; }
+  .status.done::before { background: #111; }
   .status.partial {
-    color: #8a5400;
-    background: #fdf6e3;
-    border-color: #ead9a8;
+    color: #555;
+    background: #f4f4f4;
+    border-color: #ccc;
   }
-  .status.partial::before { background: #b87a1a; }
+  .status.partial::before { background: #888; }
   .status.gap {
-    color: #a62b1f;
-    background: #fdf3f1;
-    border-color: #e8c7c2;
+    color: #888;
+    background: #fafafa;
+    border-color: #e2e2e2;
   }
-  .status.gap::before { background: #a62b1f; }
+  .status.gap::before { background: #ddd; border: 1px solid #aaa; }
 
   /* status in factor tables */
   .factor-table td.factor-name .status {
@@ -1464,6 +1914,12 @@
     .exec-answer-head { padding: 14px 18px; }
     .exec-answer-body { padding: 16px 18px; }
     .exec-answer-q { font-size: 15px; }
+    .scqa.scqa-answer { margin: 12px -18px -16px; padding: 16px 18px; }
+    .pbr-chart-foot { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .pbr-chart { padding: 18px 20px; }
+    .gantt { padding: 16px 18px; }
+    .gantt-head { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .gantt-legend { flex-wrap: wrap; gap: 10px; }
     .bridge { padding: 20px 18px; }
     .bridge-table { font-size: 11.5px; }
     .bridge-table td:first-child,
@@ -1491,6 +1947,39 @@
 </head>
 <body>
 
+<!-- 플로팅 미니맵 (fixed position - 우측 중앙) -->
+<nav class="minimap" aria-label="문서 네비게이션">
+  <a href="#zone-01" class="minimap-item" data-zone="zone-01">
+    <span class="minimap-dot"></span>
+    <span class="minimap-label">01 Overview</span>
+  </a>
+  <a href="#zone-02" class="minimap-item" data-zone="zone-02">
+    <span class="minimap-dot"></span>
+    <span class="minimap-label">02 Answer</span>
+  </a>
+  <a href="#zone-03" class="minimap-item" data-zone="zone-03">
+    <span class="minimap-dot"></span>
+    <span class="minimap-label">03 Big Bets</span>
+  </a>
+  <a href="#zone-04" class="minimap-item" data-zone="zone-04">
+    <span class="minimap-dot"></span>
+    <span class="minimap-label">04 Plan</span>
+  </a>
+  <a href="#zone-05" class="minimap-item" data-zone="zone-05">
+    <span class="minimap-dot"></span>
+    <span class="minimap-label">05 Diagnosis</span>
+  </a>
+  <div class="minimap-divider"></div>
+  <a href="#toc" class="minimap-action" title="목차로">
+    <span class="minimap-action-dot"></span>
+    <span class="minimap-action-label">목차</span>
+  </a>
+  <button class="minimap-action" id="minimap-top" title="맨 위로" type="button">
+    <span class="minimap-action-dot"></span>
+    <span class="minimap-action-label">Top</span>
+  </button>
+</nav>
+
 <div class="doc">
 
   <header class="doc-head">
@@ -1504,9 +1993,69 @@
   </header>
 
   <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- TOC · 문서 구조 / 목차 -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <nav class="toc" id="toc" aria-label="문서 목차">
+    <div class="toc-head">
+      <span class="toc-head-title">Document Structure</span>
+      <span class="toc-head-meta">5 Zones · 임원 의사결정용 보고서</span>
+    </div>
+    <div class="toc-grid">
+      <a href="#zone-01" class="toc-item">
+        <div class="toc-item-tag mono">ZONE 01</div>
+        <div class="toc-item-title">Overview<br>재무 현황</div>
+        <div class="toc-item-desc">5/13 종가 기준 KPI 표와 현 상태 진단.</div>
+        <div class="toc-item-list">
+          <strong>00</strong> 재무 현황<br>
+          주가·시총·PBR·외인·앱
+        </div>
+      </a>
+      <a href="#zone-02" class="toc-item">
+        <div class="toc-item-tag mono">ZONE 02</div>
+        <div class="toc-item-title">Executive<br>Answer</div>
+        <div class="toc-item-desc">SCQA 구조로 12개월 핵심 질문과 답 제시.</div>
+        <div class="toc-item-list">
+          <strong>01</strong> 핵심 질문<br>
+          Q → S → C → Q → A<br>
+          PBR 시나리오 차트
+        </div>
+      </a>
+      <a href="#zone-03" class="toc-item">
+        <div class="toc-item-tag mono">ZONE 03</div>
+        <div class="toc-item-title">Big Bets<br>3개 빅 베팅</div>
+        <div class="toc-item-desc">6월 이사회 안건. 임팩트 × 시급성 매트릭스.</div>
+        <div class="toc-item-list">
+          <strong>02</strong> 빅 베팅<br>
+          01 수급 · 02 시그널 · 03 차별화
+        </div>
+      </a>
+      <a href="#zone-04" class="toc-item">
+        <div class="toc-item-tag mono">ZONE 04</div>
+        <div class="toc-item-title">12-Month<br>Plan</div>
+        <div class="toc-item-desc">36개 액션 Gantt 타임라인. 두 트랙 병렬.</div>
+        <div class="toc-item-list">
+          <strong>03</strong> 12개월 액션<br>
+          트랙 A 18 (자본시장)<br>
+          트랙 B 18 (앱 진화)
+        </div>
+      </a>
+      <a href="#zone-05" class="toc-item">
+        <div class="toc-item-tag mono">ZONE 05</div>
+        <div class="toc-item-title">Diagnosis<br>진단 근거</div>
+        <div class="toc-item-desc">3대 관점 진단 (펼치기). 113개 진단 항목.</div>
+        <div class="toc-item-list">
+          <strong>04</strong> 고객 수익성<br>
+          <strong>05</strong> 정부 디스카운트<br>
+          <strong>06</strong> 글로벌 재평가
+        </div>
+      </a>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
   <!-- ZONE 01 · Executive Overview (공통 영역) -->
   <!-- ═══════════════════════════════════════════════════════ -->
-  <div class="zone-overview">
+  <div class="zone-overview" id="zone-01">
     <div class="zone-label">
       <span class="zone-label-tag mono">Zone 01 · Overview</span>
       <span class="zone-label-line"></span>
@@ -1514,21 +2063,21 @@
     </div>
 
     <div class="disclaimer">
-      <span class="disclaimer-tag mono">⚠ AI Generated</span>
+      <span class="disclaimer-tag mono">AI Generated</span>
       <span class="disclaimer-text">본 문서는 AI(Claude)가 공개 자료를 기반으로 작성한 분석 초안입니다. 일부 수치·해석에 오류가 포함될 수 있으므로 의사결정에 활용하기 전 반드시 원자료 검증·내부 데이터 대조·전문가 검토를 거쳐야 합니다. 정성 평가(●●●/●●○/●○○)는 가설 수준이며, 추후 실무 데이터로 갱신 필요.</span>
     </div>
 
     <div class="summary">
       <div class="summary-label mono">Executive Summary</div>
       <p>
-        2026년 5월 13일 기준 주가 공모가 대비 <strong>−26%</strong> (6,150원), 시가총액 2.68조원. 1분기 NIM 1.57%·ROE 5.9%·순이익 +106.8%로 펀더멘털 반등 신호이나, 앱 만족도는 3위(76.0pt)에 머물고 외인 비중은 한자릿. <strong>9월 보호예수 해제(1.19억주)</strong>와 <strong>10월 업비트 제휴 만료</strong>가 임박. 본 보고서는 <strong>"12개월 안에 PBR 1.4× 도달 + 앱 만족도 1위 진입"</strong> 이중 목표를 두 트랙으로 분해. <strong>트랙 A (자본시장)</strong>는 외인·기관을 움직이고, <strong>트랙 B (앱 진화)</strong>는 1,553만 고객을 움직임. <strong>Zone 02</strong> 임원 요약, <strong>Zone 03</strong> 3개 빅 베팅, <strong>Zone 04</strong> 36개 액션 (트랙 A 18 + 트랙 B 18), <strong>Zone 05</strong> 진단 근거 순으로 구성.
+        <strong>결론 — 6월 이사회에서 3개 빅 베팅을 동시 결정하면, 12개월 안에 PBR 0.97× → 1.4× (주가 5,590 → 8,100원) 도달과 앱 만족도 3위 → 1위 진입이 동시에 가능.</strong> 현재 상태: 주가 −32.7%, 시총 2조 2,678억, <strong>PBR 0.97×로 청산가치 미만</strong>이며 <strong>외국인 소진율 0.04% (사실상 외인 부재, 카뱅 16.7% 대비 격차 417배)</strong>. 펀더멘털은 반등 신호 (1Q NIM 1.57%·ROE 5.9%·순이익 +106.8%·고객 1,553만)이나 시장은 평가하지 않음. 9월 보호예수 해제(1.19억주) + 10월 업비트 만료가 임박. 본 보고서는 두 트랙으로 답을 제시: <strong>트랙 A 자본시장 액션 18개</strong>가 외인을 움직이고, <strong>트랙 B 앱 진화 액션 18개</strong>가 1,553만 고객을 움직임. 구성: <strong>Zone 02</strong> 임원 요약, <strong>Zone 03</strong> 빅 베팅, <strong>Zone 04</strong> 36개 액션 로드맵, <strong>Zone 05</strong> 진단 근거.
       </p>
     </div>
 
-    <!-- §0 재무 현황 지표 -->
+    <!-- 00 재무 현황 지표 -->
     <section id="kpi" style="margin-bottom: 0;">
       <div class="sec-h">
-        <div class="sec-h-num mono">§ 00</div>
+        <div class="sec-h-num mono">00</div>
         <div class="sec-h-title">재무 현황 지표</div>
         <div class="sec-h-sub">Key Performance Indicators</div>
       </div>
@@ -1545,17 +2094,24 @@
       <tbody>
         <tr>
           <td>주가</td>
-          <td class="val">6,150₩</td>
-          <td class="target">9,000₩</td>
-          <td class="delta">+46%</td>
+          <td class="val">5,590₩</td>
+          <td class="target">8,100₩</td>
+          <td class="delta">+45% 필요</td>
           <td>PBR 1.4× 도달</td>
         </tr>
         <tr>
           <td>시가총액</td>
-          <td class="val">2.68조</td>
-          <td class="target">4조+</td>
-          <td class="delta">−25% vs 공모가</td>
+          <td class="val">2.27조</td>
+          <td class="target">3.3조+</td>
+          <td class="delta">−32.7% vs 공모가</td>
           <td>오버행 해소 · 펀더멘털 회복</td>
+        </tr>
+        <tr>
+          <td>주가순자산비율 (PBR)</td>
+          <td class="val">0.97×</td>
+          <td class="target">1.4×</td>
+          <td class="delta">청산가치 미만</td>
+          <td>외인·국연 진입 · 자사주</td>
         </tr>
         <tr>
           <td>순이자마진 (NIM)</td>
@@ -1587,9 +2143,9 @@
         </tr>
         <tr>
           <td>외국인 지분율</td>
-          <td class="val">한자릿</td>
-          <td class="target">15%+</td>
-          <td class="delta">vs 카뱅 16.7%</td>
+          <td class="val">0.04%</td>
+          <td class="target">10%+</td>
+          <td class="delta">vs 카뱅 16.7% (격차 417배)</td>
           <td>외인 IR · 지수 편입</td>
         </tr>
         <tr>
@@ -1632,7 +2188,7 @@
   <!-- ═══════════════════════════════════════════════════════ -->
   <!-- ZONE 02 · Executive Answer (임원 요약 · SCQA) -->
   <!-- ═══════════════════════════════════════════════════════ -->
-  <div class="zone-overview" style="margin-top: 48px;">
+  <div class="zone-overview" id="zone-02" style="margin-top: 48px;">
     <div class="zone-label">
       <span class="zone-label-tag mono">Zone 02 · Executive Answer</span>
       <span class="zone-label-line"></span>
@@ -1642,13 +2198,13 @@
     <div class="exec-answer">
       <div class="exec-answer-head">
         <span class="exec-answer-label mono">핵심 질문</span>
-        <span class="exec-answer-q">어떻게 12개월 안에 PBR 1.4× 도달 + 앱 만족도 1위 진입을 동시에 이룰 것인가?</span>
+        <span class="exec-answer-q">어떻게 12개월 안에 PBR 0.97× → 1.4× (주가 5,590 → 8,100원대) 도달 + 앱 만족도 1위 진입을 동시에 이룰 것인가?</span>
       </div>
       <div class="exec-answer-body">
         <div class="scqa">
           <div class="scqa-label mono">Situation<br>현황</div>
           <div class="scqa-content">
-            상장 후 주가 −26% (공모가 8,300 → 6,150원), 시총 2.68조. <strong>1분기 NIM 1.57% (+16bp YoY), ROE 5.9%, 순이익 +106.8%로 펀더멘털은 반등 신호</strong>이나 시장은 즉각 반응하지 않음. 외인 비중 한자릿 (vs 카뱅 16.7%). 한편 <strong>고객 1,553만 (+278만 YoY)으로 외형은 빠르게 성장</strong>하나 앱 만족도는 인뱅 3사 중 3위(76.0pt). <strong>1Q 호실적과 앱 만족도 격차가 동시에 존재</strong>하는 비대칭 상태.
+            상장 후 주가 −32.7% (공모가 8,300 → 5,590원, 5월 13일 KRX 장마감), 시총 2조 2,678억, <strong>PBR 0.97×로 청산가치 미만</strong>. <strong>1분기 NIM 1.57% (+16bp YoY), ROE 5.9%, 순이익 +106.8%로 펀더멘털은 반등 신호</strong>이나 시장은 즉각 반응하지 않음. <strong>외국인 보유 14.4만주, 소진율 0.04%로 사실상 외인 부재 상태</strong> (카뱅 16.7% 대비 격차 417배). 한편 <strong>고객 1,553만 (+278만 YoY)으로 외형은 빠르게 성장</strong>하나 앱 만족도는 인뱅 3사 중 3위(76.0pt). <strong>펀더멘털 반등 vs 청산가치 미만 평가의 극단적 비대칭</strong>.
           </div>
         </div>
         <div class="scqa">
@@ -1660,14 +2216,126 @@
         <div class="scqa">
           <div class="scqa-label mono">Question<br>질문</div>
           <div class="scqa-content">
-            본 보고서가 답하려는 질문: <strong>"어떤 3가지 결정을 12개월 안에 내리면 PBR 1.4× 도달과 앱 만족도 1위 진입을 동시에 이룰 수 있는가?"</strong> 113개 진단 항목 중 가장 큰 임팩트를 갖는 3개 빅 베팅 + 36개 액션(자본시장 18 + 앱 진화 18)으로 압축.
+            본 보고서가 답하려는 질문: <strong>"어떤 3가지 결정을 12개월 안에 내리면 PBR 0.97× → 1.4× (주가 5,590 → 8,100원대) 도달과 앱 만족도 1위 진입을 동시에 이룰 수 있는가?"</strong> 113개 진단 항목 중 가장 큰 임팩트를 갖는 3개 빅 베팅 + 36개 액션(자본시장 18 + 앱 진화 18)으로 압축.
           </div>
         </div>
-        <div class="scqa">
+        <div class="scqa scqa-answer">
           <div class="scqa-label mono">Answer<br>답</div>
           <div class="scqa-content">
-            <strong>3개 빅 베팅을 6월 이사회 안건으로 상정</strong>. ① 9월 오버행 사전 협상 + 자사주 매입 (수급 방어), ② Value-up 편입 + 영문 IR 강화 + AI 정량 KPI 공시 (외인 신뢰 회복), ③ AI 자산을 앱 매출 KPI로 연결 + 해외 사업 옵션 검토 (차별화 실체화). 각 빅 베팅은 <strong>자본시장 트랙(외인·기관)과 앱 진화 트랙(1,553만 고객)에서 동시 실행</strong>. 트랙 B 없이는 트랙 A의 정량 KPI가 빈껍데기. 자세한 실행 계획은 § 02·§ 03 참조, 진단 근거는 § 04-06.
+            <strong>3개 빅 베팅을 6월 이사회 안건으로 상정</strong>. ① 9월 오버행 사전 협상 + 자사주 매입 (수급 방어), ② Value-up 편입 + 영문 IR 강화 + AI 정량 KPI 공시 (외인 신뢰 회복), ③ AI 자산을 앱 매출 KPI로 연결 + 해외 사업 옵션 검토 (차별화 실체화). 각 빅 베팅은 <strong>자본시장 트랙(외인·기관)과 앱 진화 트랙(1,553만 고객)에서 동시 실행</strong>. 트랙 B 없이는 트랙 A의 정량 KPI가 빈껍데기. 자세한 실행 계획은 02·03 참조, 진단 근거는 04-06.
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PBR 시나리오 차트 -->
+    <div class="pbr-chart">
+      <div class="pbr-chart-head">
+        <div class="pbr-chart-title">PBR 회복 시나리오 · 0.97× → 1.4× 도달 경로</div>
+        <div class="pbr-chart-sub">12개월 · 4단계 · 주가 5,590 → 8,100원</div>
+      </div>
+
+      <svg class="pbr-chart-svg" viewBox="0 0 880 320" xmlns="http://www.w3.org/2000/svg" font-family="Pretendard, sans-serif">
+        <!-- Y축 그리드 -->
+        <g stroke="#eee" stroke-width="1">
+          <line x1="80" y1="40" x2="840" y2="40"/>
+          <line x1="80" y1="100" x2="840" y2="100"/>
+          <line x1="80" y1="160" x2="840" y2="160"/>
+          <line x1="80" y1="220" x2="840" y2="220"/>
+          <line x1="80" y1="270" x2="840" y2="270"/>
+        </g>
+
+        <!-- Y축 라벨 -->
+        <g font-size="11" fill="#666" font-family="JetBrains Mono, monospace" text-anchor="end">
+          <text x="72" y="44">PBR 1.4×</text>
+          <text x="72" y="104">PBR 1.3×</text>
+          <text x="72" y="164">PBR 1.2×</text>
+          <text x="72" y="224">PBR 1.0×</text>
+          <text x="72" y="274">PBR 0.97×</text>
+        </g>
+
+        <!-- X축 -->
+        <line x1="80" y1="270" x2="840" y2="270" stroke="#111" stroke-width="1"/>
+
+        <!-- X축 시점 그리드 (세로 점선) -->
+        <g stroke="#ddd" stroke-width="1" stroke-dasharray="2,3">
+          <line x1="80" y1="40" x2="80" y2="270"/>
+          <line x1="270" y1="40" x2="270" y2="270"/>
+          <line x1="460" y1="40" x2="460" y2="270"/>
+          <line x1="650" y1="40" x2="650" y2="270"/>
+          <line x1="840" y1="40" x2="840" y2="270"/>
+        </g>
+
+        <!-- 시나리오 경로 (PBR 추이 곡선) -->
+        <path d="M 80,270 Q 175,265 270,160 T 460,100 T 650,55 L 840,40"
+              stroke="#111" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+        <!-- 시나리오 영역 (PBR 곡선 아래 음영) -->
+        <path d="M 80,270 Q 175,265 270,160 T 460,100 T 650,55 L 840,40 L 840,270 Z"
+              fill="#111" opacity="0.04"/>
+
+        <!-- 단계별 마일스톤 도트 -->
+        <g>
+          <!-- 현재 -->
+          <circle cx="80" cy="270" r="6" fill="#111"/>
+          <circle cx="80" cy="270" r="3" fill="#fff"/>
+
+          <!-- 9월 오버행 해제 -->
+          <circle cx="270" cy="160" r="6" fill="#111"/>
+          <circle cx="270" cy="160" r="3" fill="#fff"/>
+
+          <!-- 12월 -->
+          <circle cx="460" cy="100" r="6" fill="#111"/>
+          <circle cx="460" cy="100" r="3" fill="#fff"/>
+
+          <!-- 2027 2월 -->
+          <circle cx="650" cy="55" r="6" fill="#111"/>
+          <circle cx="650" cy="55" r="3" fill="#fff"/>
+
+          <!-- 2027 5월 목표 -->
+          <circle cx="840" cy="40" r="8" fill="#a06010"/>
+          <circle cx="840" cy="40" r="4" fill="#fff"/>
+        </g>
+
+        <!-- X축 시점 라벨 -->
+        <g font-size="10" fill="#666" text-anchor="middle" font-family="JetBrains Mono, monospace">
+          <text x="80" y="290">5/13 현재</text>
+          <text x="270" y="290">9월 오버행</text>
+          <text x="460" y="290">12월</text>
+          <text x="650" y="290">2027 2월</text>
+          <text x="840" y="290">2027 5월</text>
+        </g>
+
+        <!-- 단계별 주가 라벨 (위쪽) -->
+        <g font-size="10" fill="#111" font-weight="700" text-anchor="middle">
+          <text x="80" y="305">5,590원</text>
+          <text x="270" y="305">6,940원</text>
+          <text x="460" y="305">7,250원</text>
+          <text x="650" y="305">7,800원</text>
+          <text x="840" y="305">8,100원</text>
+        </g>
+      </svg>
+
+      <div class="pbr-chart-foot">
+        <div class="pbr-stage">
+          <div class="pbr-stage-when mono">9월 오버행 해제</div>
+          <div class="pbr-stage-pbr">PBR 1.2×</div>
+          <div class="pbr-stage-note">Big Bet 01 (수급 방어) 단독 달성. 락업 협상 + 자사주 매입.</div>
+        </div>
+        <div class="pbr-stage">
+          <div class="pbr-stage-when mono">12월 Q4 IR</div>
+          <div class="pbr-stage-pbr">PBR 1.3×</div>
+          <div class="pbr-stage-note">Big Bet 02 (시그널) 효과 시작. Value-up + 영문 IR + AI KPI 공시.</div>
+        </div>
+        <div class="pbr-stage">
+          <div class="pbr-stage-when mono">2027 2월</div>
+          <div class="pbr-stage-pbr">PBR ~1.35×</div>
+          <div class="pbr-stage-note">외인 매수 누적. 1H 실적 + AI 매출 KPI 누적 효과 반영.</div>
+        </div>
+        <div class="pbr-stage">
+          <div class="pbr-stage-when mono">2027 5월 목표</div>
+          <div class="pbr-stage-pbr">PBR 1.4× · 8,100원</div>
+          <div class="pbr-stage-note">Big Bet 03 (차별화) 데이터 누적. 본 보고서 최종 KPI.</div>
         </div>
       </div>
     </div>
@@ -1678,7 +2346,7 @@
   <!-- ═══════════════════════════════════════════════════════ -->
   <!-- ZONE 03 · Big Bets (3개 빅 베팅) -->
   <!-- ═══════════════════════════════════════════════════════ -->
-  <div class="zone-overview" style="margin-top: 48px;">
+  <div class="zone-overview" id="zone-03" style="margin-top: 48px;">
     <div class="zone-label">
       <span class="zone-label-tag mono">Zone 03 · Big Bets</span>
       <span class="zone-label-line"></span>
@@ -1687,13 +2355,95 @@
 
     <section>
       <div class="sec-h">
-        <div class="sec-h-num mono">§ 02</div>
+        <div class="sec-h-num mono">02</div>
         <div class="sec-h-title">3개의 빅 베팅</div>
         <div class="sec-h-sub">Three Big Bets · 12-Month Decisions</div>
       </div>
       <p class="sec-intro">
         113개 진단 항목 중 임팩트 × 실행 용이성을 기준으로 압축한 3개 결정. 각각 독립적이나 <strong>3개를 동시 실행할 때 멀티플 리레이팅 시너지가 가장 큼</strong>. 6월 이사회 의사결정을 권고.
       </p>
+
+      <!-- 2x2 임팩트 매트릭스 -->
+      <div class="impact-matrix">
+        <div class="impact-matrix-head">
+          <div class="impact-matrix-title">3개 빅 베팅의 임팩트 × 시급성 매트릭스</div>
+          <div class="impact-matrix-sub">왜 이 3개인가 · 6월 이사회 안건 우선순위</div>
+        </div>
+
+        <svg class="impact-matrix-svg" viewBox="0 0 880 480" xmlns="http://www.w3.org/2000/svg" font-family="Pretendard, sans-serif">
+          <!-- 축 -->
+          <g stroke="#111" stroke-width="1.5">
+            <!-- Y축 -->
+            <line x1="120" y1="40" x2="120" y2="420"/>
+            <!-- X축 -->
+            <line x1="120" y1="420" x2="820" y2="420"/>
+          </g>
+
+          <!-- 사분면 구분 점선 -->
+          <g stroke="#bbb" stroke-width="1" stroke-dasharray="3,3">
+            <line x1="120" y1="230" x2="820" y2="230"/>
+            <line x1="470" y1="40" x2="470" y2="420"/>
+          </g>
+
+          <!-- 사분면 라벨 (배경) -->
+          <g font-size="10" fill="#aaa" font-family="JetBrains Mono, monospace" letter-spacing="0.08em">
+            <text x="135" y="60">Q1 · 즉시 실행</text>
+            <text x="485" y="60">Q2 · 장기 투자</text>
+            <text x="135" y="250">Q3 · 검토 대상</text>
+            <text x="485" y="250">Q4 · 후순위</text>
+          </g>
+
+          <!-- Y축 라벨 -->
+          <g font-size="11" fill="#111" font-weight="700" font-family="JetBrains Mono, monospace">
+            <text x="40" y="55" letter-spacing="0.04em">높음</text>
+            <text x="40" y="415" letter-spacing="0.04em">낮음</text>
+            <text x="20" y="225" letter-spacing="0.04em" transform="rotate(-90 20 225)" text-anchor="middle" style="font-size:11px;">임팩트</text>
+          </g>
+
+          <!-- X축 라벨 -->
+          <g font-size="11" fill="#111" font-weight="700" font-family="JetBrains Mono, monospace">
+            <text x="130" y="445" letter-spacing="0.04em">높음 ←</text>
+            <text x="820" y="445" text-anchor="end" letter-spacing="0.04em">→ 낮음</text>
+            <text x="470" y="465" text-anchor="middle" letter-spacing="0.04em">시급성</text>
+          </g>
+
+          <!-- Big Bet 01 (수급) - Q1 좌상단, 최고 임팩트·최고 시급성 -->
+          <g>
+            <circle cx="220" cy="110" r="48" fill="#111" opacity="0.92"/>
+            <text x="220" y="100" font-size="11" font-family="JetBrains Mono, monospace" font-weight="700" fill="#fff" text-anchor="middle">Big Bet 01</text>
+            <text x="220" y="118" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">수급</text>
+            <text x="220" y="135" font-size="10" fill="#fff" text-anchor="middle" opacity="0.8">9월 마지노선</text>
+          </g>
+
+          <!-- Big Bet 02 (시그널) - Q1 우측 - 즉시 실행, 비용 낮음 -->
+          <g>
+            <circle cx="380" cy="170" r="44" fill="#111" opacity="0.82"/>
+            <text x="380" y="160" font-size="11" font-family="JetBrains Mono, monospace" font-weight="700" fill="#fff" text-anchor="middle">Big Bet 02</text>
+            <text x="380" y="178" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">시그널</text>
+            <text x="380" y="195" font-size="10" fill="#fff" text-anchor="middle" opacity="0.8">비용 최저</text>
+          </g>
+
+          <!-- Big Bet 03 (차별화) - Q2 우상단, 임팩트 높음·시급성 낮음 -->
+          <g>
+            <circle cx="640" cy="180" r="44" fill="#111" opacity="0.72"/>
+            <text x="640" y="170" font-size="11" font-family="JetBrains Mono, monospace" font-weight="700" fill="#fff" text-anchor="middle">Big Bet 03</text>
+            <text x="640" y="188" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">차별화</text>
+            <text x="640" y="205" font-size="10" fill="#fff" text-anchor="middle" opacity="0.8">장기 본질</text>
+          </g>
+
+          <!-- 연결선 (시너지 표시) -->
+          <g stroke="#a06010" stroke-width="1.5" stroke-dasharray="2,3" fill="none">
+            <line x1="262" y1="125" x2="345" y2="160"/>
+            <line x1="415" y1="180" x2="605" y2="190"/>
+          </g>
+          <text x="540" y="178" font-size="9" fill="#a06010" font-family="JetBrains Mono, monospace" font-weight="700" text-anchor="middle">시너지</text>
+
+          <!-- 참고 점선: PBR 1.2× 도달 가능 영역 -->
+          <g>
+            <text x="800" y="105" font-size="10" fill="#666" text-anchor="end" font-family="JetBrains Mono, monospace">● PBR 1.4× 도달의 본질 동력 영역</text>
+          </g>
+        </svg>
+      </div>
 
       <div class="bigbets-grid">
 
@@ -1703,6 +2453,9 @@
             <span class="bigbet-num">Big Bet 01</span>
             <span class="bigbet-tag">수급</span>
             <span class="bigbet-title">9월 오버행 사전 협상 + 자사주 매입</span>
+          </div>
+          <div class="bigbet-lead">
+            <strong>한 줄 결론.</strong> 9월 보호예수 1.19억주 해제 전 자사주 매입·락업 연장으로 수급 충격 흡수, <strong>PBR 0.97× → 1.2× (주가 6,940원대) 단독 달성 가능</strong>. 6월 이사회 결정이 시간 마지노선.
           </div>
           <div class="bigbet-body">
             <div class="bigbet-row">
@@ -1723,14 +2476,13 @@
             </div>
             <div class="bigbet-row">
               <div class="bigbet-row-label">Impact<br>효과</div>
-              <div class="bigbet-row-content">9월 충격 회피 + 주주환원 시그널로 <strong>외인 인식 전환의 1단계</strong>. 단독으로도 PBR 1.0 → 1.2× 진입 가능성.</div>
+              <div class="bigbet-row-content">9월 충격 회피 + 주주환원 시그널로 <strong>외인 인식 전환의 1단계</strong>. 단독으로도 PBR 0.97× → 1.2× (주가 5,590 → 6,940원대) 진입 가능성.</div>
             </div>
             <div class="bigbet-row">
               <div class="bigbet-row-label">App<br>앱</div>
               <div class="bigbet-row-content"><strong>B6 1Q 호실적 가시화</strong> — 자사주 매입·중·저신용 33.7%·1Q +106.8% 같은 자랑할 만한 지표를 앱 신뢰 시그널 카드로 노출. 자본정책 결정이 고객 신뢰로 직결되는 채널.</div>
             </div>
           </div>
-          <div class="bigbet-foot">근거 진단 · § 2.6 V2 · § 2.9 O1-O5 · 트랙 B B6</div>
         </div>
 
         <!-- Big Bet 2: 시그널 -->
@@ -1739,6 +2491,9 @@
             <span class="bigbet-num">Big Bet 02</span>
             <span class="bigbet-tag">시그널</span>
             <span class="bigbet-title">Value-up 편입 + 영문 IR + AI 정량 KPI 공시</span>
+          </div>
+          <div class="bigbet-lead">
+            <strong>한 줄 결론.</strong> Value-up·영문 IR·AI KPI 3축을 6개월 내 동시 가동, <strong>외인 소진율 0.04% → 5%+ 진입 + PBR 1.3× 달성</strong>. 비용 가장 낮고 효과 가장 빠름.
           </div>
           <div class="bigbet-body">
             <div class="bigbet-row">
@@ -1759,14 +2514,13 @@
             </div>
             <div class="bigbet-row">
               <div class="bigbet-row-label">Impact<br>효과</div>
-              <div class="bigbet-row-content">외인 매수 전환의 결정적 시그널. <strong>국연·글로벌 패시브 자금 자동 트리거</strong>. 단기 6개월 내 외인 비중 한자릿 → 두 자릿수 진입 가능성.</div>
+              <div class="bigbet-row-content">외인 매수 전환의 결정적 시그널. <strong>국연·글로벌 패시브 자금 자동 트리거</strong>. 단기 6개월 내 외인 소진율 <strong>0.04% → 5%+ 진입 가능성</strong> (목표 진입 시 외인 보유 2,000만주 이상).</div>
             </div>
             <div class="bigbet-row">
               <div class="bigbet-row-label">App<br>앱</div>
               <div class="bigbet-row-content"><strong>B1 AI 보이스피싱 가시화 · B2 AI 통합검색 UX</strong> — IR 공시할 AI 정량 KPI(처리량·자동화율·매출 기여)는 결국 앱 안에서 작동해야 데이터가 생성됨. 즉 트랙 A의 KPI 공시는 트랙 B의 가시화로부터 측정 시작.</div>
             </div>
           </div>
-          <div class="bigbet-foot">근거 진단 · § 2.6 V1-V5 · § 3.2 I1-I5 · § 3.5 X3 · 트랙 B B1-B2</div>
         </div>
 
         <!-- Big Bet 3: 차별화 -->
@@ -1775,6 +2529,9 @@
             <span class="bigbet-num">Big Bet 03</span>
             <span class="bigbet-tag">차별화</span>
             <span class="bigbet-title">AI 자산 1개를 매출 KPI로 + 해외 사업 옵션 검토</span>
+          </div>
+          <div class="bigbet-lead">
+            <strong>한 줄 결론.</strong> AI 자산을 IT 자산이 아닌 매출 KPI로 전환 + 해외 사업 비전 공시, <strong>장기 PBR 1.4× (주가 8,100원) 도달의 본질 동력</strong>. 트랙 B 앱 진화 없이는 작동 불가.
           </div>
           <div class="bigbet-body">
             <div class="bigbet-row">
@@ -1802,18 +2559,13 @@
               <div class="bigbet-row-content"><strong>B7 카테고라이징 · B11 AI 챗봇 진화 · B13 AI 자산관리</strong> — 본 베팅의 본질은 앱 진화 그 자체. 트랙 B의 데이터·개인화·AI 자산관리 액션이 곧 매출 KPI 생성기. <strong>트랙 B 없이는 트랙 A의 정량 KPI가 만들어지지 않음</strong>.</div>
             </div>
           </div>
-          <div class="bigbet-foot">근거 진단 · § 1.2.9 AI1-AI5 · § 3.4 A1-A5 · § 3.6 G1-G5 · 트랙 B B7·B11·B13</div>
         </div>
 
       </div>
 
       <div class="takeaway">
-        <div class="takeaway-label mono">3개 빅 베팅의 순서</div>
-        <strong>Big Bet 01 (수급)이 시간 압박이 가장 큼</strong> — 6월 결정이 마지노선. 이게 빠지면 다른 모든 전략이 9월 충격에 묻힘. <strong>Big Bet 02 (시그널)는 비용 가장 낮고 즉시 실행 가능</strong>한 영역으로 외인 매수 전환의 가장 빠른 카드. <strong>Big Bet 03 (차별화)는 장기 멀티플 리레이팅의 본질</strong>이나 단기 임팩트는 작음. 우선순위: 수급 → 시그널 → 차별화 순으로 자원 배분.
-      </div>
-      <div class="takeaway" style="border-left-color: #b87a1a; background: #fdf6e3;">
-        <div class="takeaway-label mono">3개 빅 베팅 × 앱 진화 트랙</div>
-        세 빅 베팅 모두 <strong>App 행</strong>에서 트랙 B의 구체 액션과 연결. Big Bet 01 → B6 호실적 가시화로 자본정책이 고객 신뢰로 직결. Big Bet 02 → B1·B2로 IR KPI가 앱 측정에서 시작. Big Bet 03 → B7·B11·B13으로 AI 매출 KPI 자체가 앱 진화의 산물. <strong>자본시장 결정이 앱 변화로 이어지지 않으면 PBR 1.4× + 앱 만족도 1위 이중 목표 중 하나만 달성</strong>.
+        <div class="takeaway-label mono">3개 빅 베팅의 우선순위</div>
+        <strong>01 수급 (6월 마지노선) → 02 시그널 (비용 최저, 즉시 실행) → 03 차별화 (장기 본질)</strong>. 각 베팅 모두 트랙 B 앱 진화로 구현 — Big Bet 01→B6, 02→B1·B2, 03→B7·B11·B13. 트랙 B 없이는 PBR 1.4× + 앱 1위 이중 목표 중 하나만 달성.
       </div>
     </section>
   </div>
@@ -1823,7 +2575,7 @@
   <!-- ═══════════════════════════════════════════════════════ -->
   <!-- ZONE 04 · 12-Month Action Plan -->
   <!-- ═══════════════════════════════════════════════════════ -->
-  <div class="zone-overview" style="margin-top: 48px;">
+  <div class="zone-overview" id="zone-04" style="margin-top: 48px;">
     <div class="zone-label">
       <span class="zone-label-tag mono">Zone 04 · 12-Month Plan</span>
       <span class="zone-label-line"></span>
@@ -1832,13 +2584,244 @@
 
     <section>
       <div class="sec-h">
-        <div class="sec-h-num mono">§ 03</div>
+        <div class="sec-h-num mono">03</div>
         <div class="sec-h-title">12개월 액션 플랜</div>
         <div class="sec-h-sub">Capital Market Track · App Evolution Track</div>
       </div>
       <p class="sec-intro">
-        3개 빅 베팅을 시간축에 분해. 두 개의 병렬 트랙으로 구성: <strong>트랙 A — 자본시장 액션</strong>(IR·정책·자본정책 등 외인·기관 대상)과 <strong>트랙 B — 앱 진화 로드맵</strong>(고객이 실제 앱에서 경험할 변화). 두 트랙이 동시에 작동해야 펀더멘털과 시장 평가가 함께 움직임.
+        3개 빅 베팅을 두 트랙으로 분해. <strong>트랙 A 자본시장</strong>(외인·기관 대상)과 <strong>트랙 B 앱 진화</strong>(1,553만 고객 대상)가 동시 작동.
       </p>
+
+      <!-- Gantt 타임라인 -->
+      <div class="gantt">
+        <div class="gantt-head">
+          <div class="gantt-title">12개월 액션 타임라인 · 36개 액션의 시간 분포</div>
+          <div class="gantt-legend">
+            <span class="gantt-legend-item"><span class="gantt-legend-swatch" style="background:#111;"></span>트랙 A 자본시장</span>
+            <span class="gantt-legend-item"><span class="gantt-legend-swatch" style="background:#888;"></span>트랙 B 앱 진화</span>
+            <span class="gantt-legend-item"><span class="gantt-legend-swatch" style="background:#a06010; border-radius:50%; width:8px; height:8px;"></span>Critical 마일스톤</span>
+          </div>
+        </div>
+
+        <svg class="gantt-svg" viewBox="0 0 1080 720" xmlns="http://www.w3.org/2000/svg" font-family="Pretendard, sans-serif">
+          <!-- 시간축 배경 그리드 -->
+          <g stroke="#eee" stroke-width="1">
+            <line x1="180" y1="40" x2="180" y2="700"/>
+            <line x1="255" y1="40" x2="255" y2="700"/>
+            <line x1="330" y1="40" x2="330" y2="700"/>
+            <line x1="405" y1="40" x2="405" y2="700"/>
+            <line x1="480" y1="40" x2="480" y2="700"/>
+            <line x1="555" y1="40" x2="555" y2="700"/>
+            <line x1="630" y1="40" x2="630" y2="700"/>
+            <line x1="705" y1="40" x2="705" y2="700"/>
+            <line x1="780" y1="40" x2="780" y2="700"/>
+            <line x1="855" y1="40" x2="855" y2="700"/>
+            <line x1="930" y1="40" x2="930" y2="700"/>
+            <line x1="1005" y1="40" x2="1005" y2="700"/>
+          </g>
+
+          <!-- Critical 마일스톤 세로선 (앞으로) -->
+          <g stroke="#a06010" stroke-width="1" stroke-dasharray="3,3">
+            <line x1="180" y1="40" x2="180" y2="700"/>
+            <line x1="405" y1="40" x2="405" y2="700"/>
+            <line x1="555" y1="40" x2="555" y2="700"/>
+            <line x1="1080" y1="40" x2="1080" y2="700"/>
+          </g>
+
+          <!-- 월 라벨 -->
+          <g font-size="10" fill="#666" text-anchor="middle" font-family="JetBrains Mono, monospace" letter-spacing="0.04em">
+            <text x="180" y="28">6월</text>
+            <text x="255" y="28">7월</text>
+            <text x="330" y="28">8월</text>
+            <text x="405" y="28">9월</text>
+            <text x="480" y="28">10월</text>
+            <text x="555" y="28">11월</text>
+            <text x="630" y="28">12월</text>
+            <text x="705" y="28">1월</text>
+            <text x="780" y="28">2월</text>
+            <text x="855" y="28">3월</text>
+            <text x="930" y="28">4월</text>
+            <text x="1005" y="28">5월</text>
+          </g>
+
+          <!-- 트랙 A 헤더 -->
+          <text x="0" y="60" font-size="11" font-weight="700" fill="#111" font-family="JetBrains Mono, monospace" letter-spacing="0.08em">TRACK A · 자본시장</text>
+          <line x1="0" y1="68" x2="1080" y2="68" stroke="#111" stroke-width="1"/>
+
+          <!-- 트랙 A 액션바 (18개) -->
+          <g font-size="10" fill="#222">
+            <!-- 01 락업 협상 -->
+            <text x="0" y="86" font-family="JetBrains Mono, monospace" font-weight="700">01</text>
+            <text x="22" y="86">우리은행 락업 협상</text>
+            <rect x="180" y="78" width="100" height="10" fill="#111"/>
+
+            <!-- 02 Value-up -->
+            <text x="0" y="104" font-family="JetBrains Mono, monospace" font-weight="700">02</text>
+            <text x="22" y="104">Value-up 편입 신청</text>
+            <rect x="180" y="96" width="225" height="10" fill="#111"/>
+
+            <!-- 03 FI 블록딜 -->
+            <text x="0" y="122" font-family="JetBrains Mono, monospace" font-weight="700">03</text>
+            <text x="22" y="122">FI 블록딜 매칭</text>
+            <rect x="330" y="114" width="100" height="10" fill="#111"/>
+
+            <!-- 04 영문 컨콜 -->
+            <text x="0" y="140" font-family="JetBrains Mono, monospace" font-weight="700">04</text>
+            <text x="22" y="140">분기 영문 컨콜</text>
+            <rect x="255" y="132" width="825" height="10" fill="#111"/>
+
+            <!-- 05 자사주 매입 -->
+            <text x="0" y="158" font-family="JetBrains Mono, monospace" font-weight="700">05</text>
+            <text x="22" y="158">자사주 매입 발표</text>
+            <rect x="380" y="150" width="50" height="10" fill="#111"/>
+
+            <!-- 06 배당 로드맵 -->
+            <text x="0" y="176" font-family="JetBrains Mono, monospace" font-weight="700">06</text>
+            <text x="22" y="176">배당 로드맵 공시</text>
+            <rect x="255" y="168" width="150" height="10" fill="#111"/>
+
+            <!-- 07 업비트 결과 -->
+            <text x="0" y="194" font-family="JetBrains Mono, monospace" font-weight="700">07</text>
+            <text x="22" y="194">업비트 재계약 공시</text>
+            <rect x="480" y="186" width="75" height="10" fill="#111"/>
+
+            <!-- 08 AI KPI 공시 -->
+            <text x="0" y="212" font-family="JetBrains Mono, monospace" font-weight="700">08</text>
+            <text x="22" y="212">AI 정량 KPI 공시</text>
+            <rect x="405" y="204" width="450" height="10" fill="#111"/>
+
+            <!-- 09 해외 IR 로드쇼 -->
+            <text x="0" y="230" font-family="JetBrains Mono, monospace" font-weight="700">09</text>
+            <text x="22" y="230">해외 IR 로드쇼</text>
+            <rect x="405" y="222" width="450" height="10" fill="#111"/>
+
+            <!-- 10 AI 매출 KPI 연결 -->
+            <text x="0" y="248" font-family="JetBrains Mono, monospace" font-weight="700">10</text>
+            <text x="22" y="248">AI 자산 매출 KPI 연결</text>
+            <rect x="330" y="240" width="375" height="10" fill="#111"/>
+
+            <!-- 11 SOHO 가속 -->
+            <text x="0" y="266" font-family="JetBrains Mono, monospace" font-weight="700">11</text>
+            <text x="22" y="266">SOHO·기업여신 가속</text>
+            <rect x="330" y="258" width="525" height="10" fill="#111"/>
+
+            <!-- 12 ESG 보고서 -->
+            <text x="0" y="284" font-family="JetBrains Mono, monospace" font-weight="700">12</text>
+            <text x="22" y="284">영문 ESG 보고서</text>
+            <rect x="480" y="276" width="225" height="10" fill="#111"/>
+
+            <!-- 13 해외 사업 비전 -->
+            <text x="0" y="302" font-family="JetBrains Mono, monospace" font-weight="700">13</text>
+            <text x="22" y="302">해외 사업 비전 공시</text>
+            <rect x="630" y="294" width="375" height="10" fill="#111"/>
+
+            <!-- 14 MSCI 편입 -->
+            <text x="0" y="320" font-family="JetBrains Mono, monospace" font-weight="700">14</text>
+            <text x="22" y="320">MSCI Korea 편입 조건</text>
+            <rect x="780" y="312" width="300" height="10" fill="#111"/>
+
+            <!-- 15 거버넌스 -->
+            <text x="0" y="338" font-family="JetBrains Mono, monospace" font-weight="700">15</text>
+            <text x="22" y="338">거버넌스 개혁</text>
+            <rect x="630" y="330" width="450" height="10" fill="#111"/>
+
+            <!-- 16 AI KPI 누적 -->
+            <text x="0" y="356" font-family="JetBrains Mono, monospace" font-weight="700">16</text>
+            <text x="22" y="356">AI 매출 KPI 누적 트래킹</text>
+            <rect x="705" y="348" width="375" height="10" fill="#111"/>
+
+            <!-- 17 비이자수익 -->
+            <text x="0" y="374" font-family="JetBrains Mono, monospace" font-weight="700">17</text>
+            <text x="22" y="374">비이자수익 다각화</text>
+            <rect x="705" y="366" width="375" height="10" fill="#111"/>
+
+            <!-- 18 PBR 1.4× 도달 -->
+            <text x="0" y="392" font-family="JetBrains Mono, monospace" font-weight="700">18</text>
+            <text x="22" y="392">PBR 1.4× 도달</text>
+            <circle cx="1080" cy="388" r="6" fill="#a06010"/>
+          </g>
+
+          <!-- 트랙 B 헤더 -->
+          <text x="0" y="430" font-size="11" font-weight="700" fill="#111" font-family="JetBrains Mono, monospace" letter-spacing="0.08em">TRACK B · 앱 진화</text>
+          <line x1="0" y1="438" x2="1080" y2="438" stroke="#111" stroke-width="1"/>
+
+          <!-- 트랙 B 액션바 (선택 핵심 12개 + 최종 KPI) -->
+          <g font-size="10" fill="#222">
+            <!-- B1 AI 보이스피싱 -->
+            <text x="0" y="456" font-family="JetBrains Mono, monospace" font-weight="700">B1</text>
+            <text x="24" y="456">AI 보이스피싱 가시화</text>
+            <rect x="180" y="448" width="225" height="10" fill="#888"/>
+
+            <!-- B2 AI 검색 UX -->
+            <text x="0" y="474" font-family="JetBrains Mono, monospace" font-weight="700">B2</text>
+            <text x="24" y="474">AI 통합검색 UX 강화</text>
+            <rect x="180" y="466" width="225" height="10" fill="#888"/>
+
+            <!-- B3 한도제한 UI -->
+            <text x="0" y="492" font-family="JetBrains Mono, monospace" font-weight="700">B3</text>
+            <text x="24" y="492">한도제한·기대관리 UI</text>
+            <rect x="180" y="484" width="150" height="10" fill="#888"/>
+
+            <!-- B4 이체 동선 -->
+            <text x="0" y="510" font-family="JetBrains Mono, monospace" font-weight="700">B4</text>
+            <text x="24" y="510">이체 동선 학습 완화</text>
+            <rect x="180" y="502" width="150" height="10" fill="#888"/>
+
+            <!-- B6 호실적 가시화 -->
+            <text x="0" y="528" font-family="JetBrains Mono, monospace" font-weight="700">B6</text>
+            <text x="24" y="528">1Q 호실적 가시화</text>
+            <rect x="180" y="520" width="150" height="10" fill="#888"/>
+
+            <!-- B7 카테고라이징 -->
+            <text x="0" y="546" font-family="JetBrains Mono, monospace" font-weight="700">B7</text>
+            <text x="24" y="546">거래 카테고라이징</text>
+            <rect x="330" y="538" width="300" height="10" fill="#888"/>
+
+            <!-- B8 온보딩 -->
+            <text x="0" y="564" font-family="JetBrains Mono, monospace" font-weight="700">B8</text>
+            <text x="24" y="564">온보딩 Aha Moment</text>
+            <rect x="405" y="556" width="300" height="10" fill="#888"/>
+
+            <!-- B9 SOHO -->
+            <text x="0" y="582" font-family="JetBrains Mono, monospace" font-weight="700">B9</text>
+            <text x="24" y="582">SOHO 전용 앱 경험</text>
+            <rect x="330" y="574" width="375" height="10" fill="#888"/>
+
+            <!-- B11 AI 챗봇 -->
+            <text x="0" y="600" font-family="JetBrains Mono, monospace" font-weight="700">B11</text>
+            <text x="30" y="600">AI 챗봇 진화</text>
+            <rect x="405" y="592" width="450" height="10" fill="#888"/>
+
+            <!-- B13 AI 자산관리 -->
+            <text x="0" y="618" font-family="JetBrains Mono, monospace" font-weight="700">B13</text>
+            <text x="30" y="618">AI 자산관리 출시</text>
+            <rect x="630" y="610" width="450" height="10" fill="#888"/>
+
+            <!-- B14 다국어 앱 -->
+            <text x="0" y="636" font-family="JetBrains Mono, monospace" font-weight="700">B14</text>
+            <text x="30" y="636">다국어 앱 출시</text>
+            <rect x="780" y="628" width="300" height="10" fill="#888"/>
+
+            <!-- B16 데일리 트리거 -->
+            <text x="0" y="654" font-family="JetBrains Mono, monospace" font-weight="700">B16</text>
+            <text x="30" y="654">데일리 트리거 자산</text>
+            <rect x="705" y="646" width="375" height="10" fill="#888"/>
+
+            <!-- B18 앱 만족도 1위 -->
+            <text x="0" y="672" font-family="JetBrains Mono, monospace" font-weight="700">B18</text>
+            <text x="30" y="672">앱 만족도 1위 진입</text>
+            <circle cx="1080" cy="668" r="6" fill="#a06010"/>
+          </g>
+
+          <!-- 마일스톤 라벨 (하단) -->
+          <g font-size="9" fill="#a06010" font-family="JetBrains Mono, monospace" font-weight="700" text-anchor="middle">
+            <text x="180" y="710">6월 락업 결의</text>
+            <text x="405" y="710">9월 오버행 해제</text>
+            <text x="555" y="710">11월 Q4 IR</text>
+            <text x="1080" y="710" text-anchor="end">PBR 1.4× 도달</text>
+          </g>
+        </svg>
+      </div>
 
       <div class="sub-h" style="margin-top: 24px;">
         <div class="sub-h-num mono">트랙 A</div>
@@ -1906,11 +2889,11 @@
             </div>
             <div class="roadmap-action">
               <span class="roadmap-action-n mono">11</span>
-              <span><strong>SOHO·기업여신 가속.</strong> 자본 여력 + 정책 환경 활용. 가계대출 규제 우회의 핵심 성장 동력.<span class="roadmap-action-note mono">§ 1.1 S3</span></span>
+              <span><strong>SOHO·기업여신 가속.</strong> 자본 여력 + 정책 환경 활용. 가계대출 규제 우회의 핵심 성장 동력.<span class="roadmap-action-note mono">1.1 S3</span></span>
             </div>
             <div class="roadmap-action">
               <span class="roadmap-action-n mono">12</span>
-              <span><strong>지속가능경영보고서 영문 발간.</strong> TCFD·SASB 표준. ESG 평가 + MSCI ESG 진입 사전 조건.<span class="roadmap-action-note mono">§ 3.2 I5</span></span>
+              <span><strong>지속가능경영보고서 영문 발간.</strong> TCFD·SASB 표준. ESG 평가 + MSCI ESG 진입 사전 조건.<span class="roadmap-action-note mono">3.2 I5</span></span>
             </div>
           </div>
         </div>
@@ -1928,23 +2911,23 @@
             </div>
             <div class="roadmap-action">
               <span class="roadmap-action-n mono">14</span>
-              <span><strong>MSCI Korea 편입 조건 충족.</strong> 시총·유동성·외인 비중 정량 기준 추적. 자사주·외인 IR 결과 누적 효과.<span class="roadmap-action-note mono">§ 3.5 X1</span></span>
+              <span><strong>MSCI Korea 편입 조건 충족.</strong> 시총·유동성·외인 비중 정량 기준 추적. 자사주·외인 IR 결과 누적 효과.<span class="roadmap-action-note mono">3.5 X1</span></span>
             </div>
             <div class="roadmap-action">
               <span class="roadmap-action-n mono">15</span>
-              <span><strong>거버넌스 개혁.</strong> 사외이사 강화 + 행장 임기 안정성 시그널 + 책무구조도 대응 체계 가시화.<span class="roadmap-action-note mono">§ 2.5 G3-G5</span></span>
+              <span><strong>거버넌스 개혁.</strong> 사외이사 강화 + 행장 임기 안정성 시그널 + 책무구조도 대응 체계 가시화.<span class="roadmap-action-note mono">2.5 G3-G5</span></span>
             </div>
             <div class="roadmap-action">
               <span class="roadmap-action-n mono">16</span>
-              <span><strong>AI 자산 매출 KPI 누적 트래킹.</strong> Big Bet 03 6개월 시점 결과 반영. AI 처리 거래량·자동화율·매출 기여를 분기 공시. AI 자산이 데이터로 증명되는 단계.<span class="roadmap-action-note mono">Big Bet 03 · § 1.2.9</span></span>
+              <span><strong>AI 자산 매출 KPI 누적 트래킹.</strong> Big Bet 03 6개월 시점 결과 반영. AI 처리 거래량·자동화율·매출 기여를 분기 공시. AI 자산이 데이터로 증명되는 단계.<span class="roadmap-action-note mono">Big Bet 03 · 1.2.9</span></span>
             </div>
             <div class="roadmap-action">
               <span class="roadmap-action-n mono">17</span>
-              <span><strong>비이자수익 다각화 KPI 공시.</strong> 자산관리·교차판매·수수료 비중을 분기 공시. <strong>비이자수익 분기 비중 두 자릿수</strong> 진입이 NIM·업비트 의존 탈피의 핵심 지표.<span class="roadmap-action-note mono">§ 1.1 P3</span></span>
+              <span><strong>비이자수익 다각화 KPI 공시.</strong> 자산관리·교차판매·수수료 비중을 분기 공시. <strong>비이자수익 분기 비중 두 자릿수</strong> 진입이 NIM·업비트 의존 탈피의 핵심 지표.<span class="roadmap-action-note mono">1.1 P3</span></span>
             </div>
             <div class="roadmap-action">
               <span class="roadmap-action-n mono">18</span>
-              <span><strong>PBR 1.4× 도달.</strong> 주가 9,000원대. 본 보고서의 12개월 최종 목표 지점.<span class="roadmap-action-note mono">최종 KPI</span></span>
+              <span><strong>PBR 1.4× 도달.</strong> 주가 8,100원대 (BPS 5,781원 × 1.4). 본 보고서의 12개월 최종 목표 지점.<span class="roadmap-action-note mono">최종 KPI</span></span>
             </div>
           </div>
         </div>
@@ -1953,7 +2936,7 @@
 
       <div class="takeaway">
         <div class="takeaway-label mono">트랙 A · 자본시장 액션의 핵심</div>
-        <strong>Phase 1 (Quick Win)이 가장 시급</strong>. 6개 액션 중 5개가 Big Bet 01·02에 직결. 이 단계 실행률이 다음 단계 효과를 결정. <strong>Phase 2는 외인 매수 전환의 인프라</strong> 구축 단계. <strong>Phase 3는 카테고리 진입의 본질</strong>로 단기 임팩트는 작으나 PBR 1.4× 도달의 핵심 동력. 측정 KPI는 분기별 외인 비중·NIM·시총·민원율로 추적.
+        <strong>Phase 1 Quick Win이 가장 시급</strong>. 6개 액션 중 5개가 Big Bet 01·02에 직결. Phase 2는 외인 매수 전환 인프라, Phase 3는 카테고리 진입의 본질. 측정 KPI: 분기별 외인 비중·NIM·시총·민원율.
       </div>
 
       <div class="sub-h" style="margin-top: 40px;">
@@ -1962,7 +2945,7 @@
       </div>
 
       <p class="sec-intro">
-        트랙 A가 외인·기관 대상이라면, 트랙 B는 <strong>1,553만 고객이 앱에서 실제로 경험할 변화</strong>. 9개 고객 접점(§ 1.2) 중 분기별 어떤 변화가 고객에게 가시화되는지 분해. 자본시장 시그널과 동시에 작동해야 펀더멘털(MAU·NIM·교차판매)이 실제로 움직임.
+        트랙 A가 외인·기관 대상이라면, 트랙 B는 <strong>1,553만 고객이 앱에서 실제로 경험할 변화</strong>. 9개 고객 접점(1.2) 중 분기별 어떤 변화가 고객에게 가시화되는지 분해. 자본시장 시그널과 동시에 작동해야 펀더멘털(MAU·NIM·교차판매)이 실제로 움직임.
       </p>
 
       <div class="roadmap">
@@ -1976,27 +2959,27 @@
           <div class="roadmap-actions">
             <div class="roadmap-action">
               <span class="roadmap-action-n mono">B1</span>
-              <span><strong>AI 보이스피싱 탐지 가시화.</strong> 현재 백엔드에만 있는 AI 탐지를 앱 알림·홈 카드로 노출. "이번 달 ○○건 차단" 같은 신뢰 시그널 카드 신설.<span class="roadmap-action-note mono">§ 1.2.7 T3 · § 1.2.9 AI2</span></span>
+              <span><strong>AI 보이스피싱 탐지 가시화.</strong> 현재 백엔드에만 있는 AI 탐지를 앱 알림·홈 카드로 노출. "이번 달 ○○건 차단" 같은 신뢰 시그널 카드 신설.<span class="roadmap-action-note mono">1.2.7 T3 · 1.2.9 AI2</span></span>
             </div>
             <div class="roadmap-action">
               <span class="roadmap-action-n mono">B2</span>
-              <span><strong>AI 통합검색 UX 강화.</strong> "카드 잃어버렸어요" 같은 자연어 검색을 홈 진입점에 배치. 셀프서비스 전환율 측정 시작.<span class="roadmap-action-note mono">§ 1.2.5 S4 · § 1.2.9 AI3</span></span>
+              <span><strong>AI 통합검색 UX 강화.</strong> "카드 잃어버렸어요" 같은 자연어 검색을 홈 진입점에 배치. 셀프서비스 전환율 측정 시작.<span class="roadmap-action-note mono">1.2.5 S4 · 1.2.9 AI3</span></span>
             </div>
             <div class="roadmap-action">
               <span class="roadmap-action-n mono">B3</span>
-              <span><strong>한도제한·기대관리 UI 개선.</strong> 한도제한·다수계좌 규정을 사전 안내. "왜 그런지" 설명으로 욕설 리뷰의 직접 원인 해소.<span class="roadmap-action-note mono">§ 1.2.5 S5 · § 1.2.2 B6</span></span>
+              <span><strong>한도제한·기대관리 UI 개선.</strong> 한도제한·다수계좌 규정을 사전 안내. "왜 그런지" 설명으로 욕설 리뷰의 직접 원인 해소.<span class="roadmap-action-note mono">1.2.5 S5 · 1.2.2 B6</span></span>
             </div>
             <div class="roadmap-action">
               <span class="roadmap-action-n mono">B4</span>
-              <span><strong>이체 동선 학습 비용 완화.</strong> 리뉴얼 후 사용자가 잃은 이체 동선에 대해 "이전 방식으로 이체" 옵션 또는 가이드 제공.<span class="roadmap-action-note mono">§ 1.2.1 A2 · § 1.2.4 U2</span></span>
+              <span><strong>이체 동선 학습 비용 완화.</strong> 리뉴얼 후 사용자가 잃은 이체 동선에 대해 "이전 방식으로 이체" 옵션 또는 가이드 제공.<span class="roadmap-action-note mono">1.2.1 A2 · 1.2.4 U2</span></span>
             </div>
             <div class="roadmap-action">
               <span class="roadmap-action-n mono">B5</span>
-              <span><strong>FAQ·셀프서비스 강화.</strong> 검색·필터·비주얼 가이드 보강. 첫 가입자 자가 해결 비율 KPI 추적 시작.<span class="roadmap-action-note mono">§ 1.2.5 S4</span></span>
+              <span><strong>FAQ·셀프서비스 강화.</strong> 검색·필터·비주얼 가이드 보강. 첫 가입자 자가 해결 비율 KPI 추적 시작.<span class="roadmap-action-note mono">1.2.5 S4</span></span>
             </div>
             <div class="roadmap-action">
               <span class="roadmap-action-n mono">B6</span>
-              <span><strong>1Q 호실적 가시화.</strong> 앱 안에 분기 실적·고객 수·중·저신용 33.7% 같은 자랑할 만한 지표를 신뢰 시그널 카드로 노출.<span class="roadmap-action-note mono">§ 00 · § 1.2.7 T5</span></span>
+              <span><strong>1Q 호실적 가시화.</strong> 앱 안에 분기 실적·고객 수·중·저신용 33.7% 같은 자랑할 만한 지표를 신뢰 시그널 카드로 노출.<span class="roadmap-action-note mono">00 · 1.2.7 T5</span></span>
             </div>
           </div>
         </div>
@@ -2010,27 +2993,27 @@
           <div class="roadmap-actions">
             <div class="roadmap-action">
               <span class="roadmap-action-n mono">B7</span>
-              <span><strong>거래 카테고라이징 출시.</strong> 거래 내역을 자동 분류 (식비·교통·구독 등). "이번 달 소비" 같은 월별 소비 인사이트 화면.<span class="roadmap-action-note mono">§ 1.2.8 D2</span></span>
+              <span><strong>거래 카테고라이징 출시.</strong> 거래 내역을 자동 분류 (식비·교통·구독 등). "이번 달 소비" 같은 월별 소비 인사이트 화면.<span class="roadmap-action-note mono">1.2.8 D2</span></span>
             </div>
             <div class="roadmap-action">
               <span class="roadmap-action-n mono">B8</span>
-              <span><strong>온보딩 Aha Moment 설계.</strong> 신규 가입 후 첫 송금·첫 적금까지의 여정 디자인. D7·D30 활성화율 KPI 측정 시작.<span class="roadmap-action-note mono">§ 1.2.6 O2-O4</span></span>
+              <span><strong>온보딩 Aha Moment 설계.</strong> 신규 가입 후 첫 송금·첫 적금까지의 여정 디자인. D7·D30 활성화율 KPI 측정 시작.<span class="roadmap-action-note mono">1.2.6 O2-O4</span></span>
             </div>
             <div class="roadmap-action">
               <span class="roadmap-action-n mono">B9</span>
-              <span><strong>SOHO 전용 앱 경험.</strong> 개인사업자 별도 진입점·맞춤 화면. 트랙 A의 SOHO 여신 가속이 앱 UX로 구현되는 단계.<span class="roadmap-action-note mono">§ 1.1 S3 · Action 11</span></span>
+              <span><strong>SOHO 전용 앱 경험.</strong> 개인사업자 별도 진입점·맞춤 화면. 트랙 A의 SOHO 여신 가속이 앱 UX로 구현되는 단계.<span class="roadmap-action-note mono">1.1 S3 · Action 11</span></span>
             </div>
             <div class="roadmap-action">
               <span class="roadmap-action-n mono">B10</span>
-              <span><strong>접근성·시니어 모드.</strong> 텍스트 크기·고대비·시니어 진입점. 1금융권 WCAG 의무 대응 + 시장 확장.<span class="roadmap-action-note mono">§ 1.2.4 U6</span></span>
+              <span><strong>접근성·시니어 모드.</strong> 텍스트 크기·고대비·시니어 진입점. 1금융권 WCAG 의무 대응 + 시장 확장.<span class="roadmap-action-note mono">1.2.4 U6</span></span>
             </div>
             <div class="roadmap-action">
               <span class="roadmap-action-n mono">B11</span>
-              <span><strong>AI 챗봇 진화.</strong> 현재 FAQ 매칭 수준에서 거래 내역·상품 조건·개인화 문의 대응으로 확대. 1콜 해결률 KPI 추적.<span class="roadmap-action-note mono">§ 1.2.5 S6 · § 1.2.9 AI4</span></span>
+              <span><strong>AI 챗봇 진화.</strong> 현재 FAQ 매칭 수준에서 거래 내역·상품 조건·개인화 문의 대응으로 확대. 1콜 해결률 KPI 추적.<span class="roadmap-action-note mono">1.2.5 S6 · 1.2.9 AI4</span></span>
             </div>
             <div class="roadmap-action">
               <span class="roadmap-action-n mono">B12</span>
-              <span><strong>브랜드 보이스 & 톤 일관화.</strong> 알림·에러·거절 메시지의 톤 가이드 제정. 화면별 편차 해소.<span class="roadmap-action-note mono">§ 1.2.2 B6</span></span>
+              <span><strong>브랜드 보이스 & 톤 일관화.</strong> 알림·에러·거절 메시지의 톤 가이드 제정. 화면별 편차 해소.<span class="roadmap-action-note mono">1.2.2 B6</span></span>
             </div>
           </div>
         </div>
@@ -2044,23 +3027,23 @@
           <div class="roadmap-actions">
             <div class="roadmap-action">
               <span class="roadmap-action-n mono">B13</span>
-              <span><strong>AI 자산관리 출시.</strong> 마이데이터 + 17건 특허 활용. 카뱅 신용점수·토스 자산관리 대비 케뱅 차별화 자산관리 진입점.<span class="roadmap-action-note mono">§ 1.2.8 D3 · § 1.2.9 AI4</span></span>
+              <span><strong>AI 자산관리 출시.</strong> 마이데이터 + 17건 특허 활용. 카뱅 신용점수·토스 자산관리 대비 케뱅 차별화 자산관리 진입점.<span class="roadmap-action-note mono">1.2.8 D3 · 1.2.9 AI4</span></span>
             </div>
             <div class="roadmap-action">
               <span class="roadmap-action-n mono">B14</span>
-              <span><strong>다국어 앱 출시.</strong> 영문 앱 우선. 국내 거주 외국인 + 해외 사업 비전(트랙 A Action 13) 사전 시뮬레이션.<span class="roadmap-action-note mono">§ 1.2.4 U7 · § 3.4 A3</span></span>
+              <span><strong>다국어 앱 출시.</strong> 영문 앱 우선. 국내 거주 외국인 + 해외 사업 비전(트랙 A Action 13) 사전 시뮬레이션.<span class="roadmap-action-note mono">1.2.4 U7 · 3.4 A3</span></span>
             </div>
             <div class="roadmap-action">
               <span class="roadmap-action-n mono">B15</span>
-              <span><strong>해외주식·외환 허브 UX.</strong> 해외 체류 사용자 락인 + 서학개미 전용 진입점. 트랙 A Action 13 해외 사업의 앱 측면.<span class="roadmap-action-note mono">§ 1.2.1 A4 · § 1.1 S2</span></span>
+              <span><strong>해외주식·외환 허브 UX.</strong> 해외 체류 사용자 락인 + 서학개미 전용 진입점. 트랙 A Action 13 해외 사업의 앱 측면.<span class="roadmap-action-note mono">1.2.1 A4 · 1.1 S2</span></span>
             </div>
             <div class="roadmap-action">
               <span class="roadmap-action-n mono">B16</span>
-              <span><strong>데일리 트리거 자산 구축.</strong> 토스 행운퀴즈 같은 매일 앱을 열게 하는 메커닉. MAU 회복의 직접 자산.<span class="roadmap-action-note mono">§ 1.2.8 D5</span></span>
+              <span><strong>데일리 트리거 자산 구축.</strong> 토스 행운퀴즈 같은 매일 앱을 열게 하는 메커닉. MAU 회복의 직접 자산.<span class="roadmap-action-note mono">1.2.8 D5</span></span>
             </div>
             <div class="roadmap-action">
               <span class="roadmap-action-n mono">B17</span>
-              <span><strong>디자인 시스템 일원화 완료.</strong> 9개 접점 전반 토큰·컴포넌트 통합 운영. 모든 B1-B16 액션의 실행 인프라.<span class="roadmap-action-note mono">§ 1.2.4 U5</span></span>
+              <span><strong>디자인 시스템 일원화 완료.</strong> 9개 접점 전반 토큰·컴포넌트 통합 운영. 모든 B1-B16 액션의 실행 인프라.<span class="roadmap-action-note mono">1.2.4 U5</span></span>
             </div>
             <div class="roadmap-action">
               <span class="roadmap-action-n mono">B18</span>
@@ -2073,12 +3056,12 @@
 
       <div class="takeaway">
         <div class="takeaway-label mono">트랙 B · 앱 진화의 핵심</div>
-        앱 진화의 시간 흐름은 <strong>"신뢰 시그널 → 개인화·자산화 → 차별화·카테고리"</strong>. App Phase 1은 <strong>기존 자산(AI 보이스피싱·AI 통합검색)을 가시화</strong>하는 가장 빠른 변화. App Phase 2는 <strong>데이터·개인화 자산 구축</strong>으로 카뱅·토스 격차 축소. App Phase 3는 <strong>케뱅만의 차별화 진입점</strong> 구축. 트랙 A 시그널이 외인을 움직이고, 트랙 B 진화가 1,553만 고객을 움직임 — 두 트랙이 동시에 작동해야 NIM·MAU·교차판매가 함께 움직임.
+        앱 진화는 <strong>신뢰 시그널(B1-B6) → 개인화·자산화(B7-B12) → 차별화·카테고리(B13-B18)</strong> 순. Phase 1은 기존 AI 자산 가시화, Phase 2는 카뱅·토스 격차 축소, Phase 3는 케뱅 차별화 진입점 구축.
       </div>
 
-      <div class="takeaway" style="border-left-color: #b87a1a; background: #fdf6e3;">
+      <div class="takeaway" style="border-left-color: #555; background: #f4f4f0;">
         <div class="takeaway-label mono">두 트랙의 연결 관계</div>
-        <strong>트랙 A → 트랙 B 영향</strong>: 자본 여력(자사주·Value-up)이 앱 진화 투자 재원 제공. <strong>트랙 B → 트랙 A 영향</strong>: B1 AI 보이스피싱 가시화는 트랙 A 액션 08(AI KPI 공시)의 정량 근거, B7 카테고라이징은 액션 16(AI 매출 KPI 누적)의 데이터 근거, B9 SOHO 전용 경험은 액션 11(SOHO 여신 가속)의 사용자 도구. 즉 <strong>트랙 B 없이는 트랙 A의 정량 KPI 공시가 빈껍데기</strong>.
+        <strong>트랙 A → B</strong>: 자본 여력(자사주·Value-up)이 앱 진화 재원. <strong>트랙 B → A</strong>: B1 보이스피싱·B7 카테고라이징·B9 SOHO가 트랙 A 액션 08·16·11의 정량 근거. <strong>트랙 B 없이는 트랙 A의 KPI 공시가 빈껍데기</strong>.
       </div>
     </section>
   </div>
@@ -2088,7 +3071,7 @@
   <!-- ═══════════════════════════════════════════════════════ -->
   <!-- ZONE 05 · Three Perspectives (3대 관점 진단 근거) -->
   <!-- ═══════════════════════════════════════════════════════ -->
-  <div class="zone-perspectives">
+  <div class="zone-perspectives" id="zone-05">
     <div class="zone-label">
       <span class="zone-label-tag mono">Zone 05 · Diagnosis</span>
       <span class="zone-label-line"></span>
@@ -2096,7 +3079,7 @@
     </div>
 
     <p class="sec-intro" style="margin-bottom: 32px;">
-      Zone 02-04의 빅 베팅·액션 플랜의 진단 근거. <strong>Tab 01 고객 수익성</strong>은 펀더멘털 + 9개 고객 접점 진단(트랙 B의 출발점). <strong>Tab 02 정부 디스카운트</strong>는 외인·국연 매도 + 정책·거버넌스·주주환원·AI 정책 정렬·오버행 진단(트랙 A의 출발점). <strong>Tab 03 글로벌 재평가</strong>는 글로벌 IR·카테고리·동남아·지수·AI 진단(트랙 A·B 모두에 작용). 각 진단 항목은 트랙 A 또는 트랙 B의 구체 액션(번호)으로 연결. 각 탭 끝에는 3관점 매트릭스와 3사 비교(카뱅·토스) 자료 첨부.
+      Zone 02-04 빅 베팅·액션 플랜의 진단 근거. <strong>Tab 01 고객 수익성</strong>(트랙 B 출발점) · <strong>Tab 02 정부 디스카운트</strong>(트랙 A 출발점) · <strong>Tab 03 글로벌 재평가</strong>(트랙 A·B 양쪽). 각 진단 항목은 트랙 액션 번호로 연결.
     </p>
 
     <!-- TABS -->
@@ -2120,19 +3103,30 @@
 
       <section>
         <div class="sec-h">
-          <div class="sec-h-num mono">§ 04</div>
+          <div class="sec-h-num mono">04</div>
           <div class="sec-h-title">고객 수익성</div>
           <div class="sec-h-sub">Customer · Profitability</div>
         </div>
-        <p class="sec-intro">
-          업비트 의존 구조로 NIM이 3년 연속 급락. 가상자산 시장 침체 시 조달비용 증가와 운용수익 감소가 동시 발생. 자체 수익원 확보가 가장 시급한 펀더멘털 과제임.
-        </p>
 
-        <!-- § 1.1 -->
+        <div class="tldr">
+          <div class="tldr-label mono">TL;DR</div>
+          <div class="tldr-content">
+            <strong>1Q NIM 1.57% (+16bp YoY)로 반등</strong>은 시작했지만, 업비트 예치금 의존 구조와 <strong>9개 고객 접점 중 7개가 카뱅·토스 대비 후행</strong>으로 펀더멘털 회복의 LTV 전환이 약함. AI 자산은 가시 시그널이 강한 유일한 영역. <strong>해법은 트랙 B 앱 진화 18개 액션</strong>으로 분해되어 9개 접점을 순차 개선.
+          </div>
+        </div>
+
+        <!-- 1.1 -->
         <div class="sub-h">
-          <div class="sub-h-num mono">§ 1.1</div>
+          <div class="sub-h-num mono">1.1</div>
           <div class="sub-h-title">문제 분석 · 해소 방안</div>
         </div>
+
+        <details class="diag">
+          <summary>
+            <span><span class="diag-tag mono">진단 상세</span>재무 펀더멘털 문제·해소 방안 매핑</span>
+            <span class="diag-count mono">Problem · Solution · 8개 항목</span>
+          </summary>
+          <div class="diag-content" style="padding: 8px 4px;">
 
         <div class="ps-grid">
           <div class="ps-col">
@@ -2204,16 +3198,16 @@
 
         <!-- ─ 1.1과 1.2 연결 브릿지 -->
         <div class="bridge">
-          <div class="bridge-label mono">From § 1.1 to § 1.2 · 인과 흐름</div>
+          <div class="bridge-label mono">From 1.1 to 1.2 · 인과 흐름</div>
           <p class="bridge-intro">
-            § 1.1의 재무 문제는 결국 <strong>고객 행동의 결과</strong>. NIM·MAU·이익 후퇴는 모두 "고객이 케뱅을 메인뱅크로 선택하지 않는다"는 단일 현상의 다른 표현. 이 현상은 다시 <strong>고객 접점에서의 경험 격차</strong>로 거슬러 올라감.
+            1.1의 재무 문제는 결국 <strong>고객 행동의 결과</strong>. NIM·MAU·이익 후퇴는 모두 "고객이 케뱅을 메인뱅크로 선택하지 않는다"는 단일 현상의 다른 표현. 이 현상은 다시 <strong>고객 접점에서의 경험 격차</strong>로 거슬러 올라감.
           </p>
           <table class="bridge-table">
             <thead>
               <tr>
-                <th>재무 결과 (§ 1.1)</th>
+                <th>재무 결과 (1.1)</th>
                 <th>고객 행동</th>
-                <th>접점 원인 (§ 1.2)</th>
+                <th>접점 원인 (1.2)</th>
               </tr>
             </thead>
             <tbody>
@@ -2240,23 +3234,33 @@
             </tbody>
           </table>
           <p class="bridge-conclusion">
-            즉 <strong>§ 1.1의 S1-S4(상품·전략 해법)</strong>가 작동하려면 <strong>§ 1.2의 접점 인프라(브랜드·UX·데이터)</strong>가 먼저 정비되어야 함. SOHO 상품을 출시해도 캠페인·UX가 받쳐주지 않으면 도달하지 못하고, KT 락인 우대를 만들어도 브랜드·온보딩이 약하면 전환되지 않음. <strong>§ 1.2는 § 1.1의 전제 조건</strong>.
+            즉 <strong>1.1의 S1-S4(상품·전략 해법)</strong>가 작동하려면 <strong>1.2의 접점 인프라(브랜드·UX·데이터)</strong>가 먼저 정비되어야 함. SOHO 상품을 출시해도 캠페인·UX가 받쳐주지 않으면 도달하지 못하고, KT 락인 우대를 만들어도 브랜드·온보딩이 약하면 전환되지 않음. <strong>1.2는 1.1의 전제 조건</strong>.
           </p>
         </div>
 
-        <!-- § 1.2 고객 접점 진단 -->
+          </div>
+        </details>
+
+        <!-- 1.2 고객 접점 진단 -->
         <div class="sub-h">
-          <div class="sub-h-num mono">§ 1.2</div>
+          <div class="sub-h-num mono">1.2</div>
           <div class="sub-h-title">고객 접점 진단 · 9개 영역</div>
         </div>
 
         <p class="sec-intro">
-          § 1.1 재무 진단의 근본 원인을 고객 접점 차원에서 분해. <strong>앱 · 브랜드 · 캠페인 · UX · 고객지원 · 온보딩 · 보안·신뢰 · 데이터·개인화 · AI 활용</strong> 9개 영역에서 토스·카뱅과의 격차와 케뱅의 실제 자산을 진단. 토스·카뱅이 명확한 캐릭터·아이덴티티로 락인을 구축한 반면, 케뱅은 7년간 행장 교체마다 CI·슬로건이 흔들리며 자산 누적에 어려움. 단 AI 영역은 인뱅 최초·금융권 최초 시그널을 축적하며 가시 차별화가 가장 명확한 영역.
+          9개 고객 접점에서 카뱅·토스와의 격차를 진단. 케뱅은 7년간 CI·슬로건이 흔들리며 누적 자산 부족, AI만 가시 차별화가 명확한 영역.
         </p>
+
+        <details class="diag">
+          <summary>
+            <span><span class="diag-tag mono">진단 상세</span>9개 접점 × 평균 5개 항목 = 49개 진단 자료</span>
+            <span class="diag-count mono">App · Brand · Campaign · UX · Support · Onboard · Trust · Data · AI</span>
+          </summary>
+          <div class="diag-content" style="padding: 8px 4px;">
 
         <!-- ─ 1.2.1 앱 -->
         <div class="sub-h">
-          <div class="sub-h-num mono">§ 1.2.1</div>
+          <div class="sub-h-num mono">1.2.1</div>
           <div class="sub-h-title">앱 · Application</div>
         </div>
 
@@ -2274,38 +3278,38 @@
               <td class="factor-rank"><span class="rank-id">A1</span><span class="status gap">●○○ Gap</span></td>
               <td class="factor-name">잦은 리뉴얼로 학습 비용 증가</td>
               <td class="factor-data">2024.07 전면 개편</td>
-              <td class="factor-desc">"완전히 판을 뒤집고 새로 시작"한 리뉴얼 직후, 기존 사용자가 익숙한 동선을 잃고 이체·계좌선택 패턴 변경에 불만 폭증. 사용 안정성 신뢰 훼손.</td>
+              <td class="factor-desc">2024.07 전면 개편 직후 기존 동선 상실 — 이체·계좌선택 패턴 변경에 불만 폭증.</td>
             </tr>
             <tr>
               <td class="factor-rank"><span class="rank-id">A2</span><span class="status gap">●○○ Gap</span></td>
               <td class="factor-name">기능 발견성 부족</td>
               <td class="factor-data">"숨겨진 기능"</td>
-              <td class="factor-desc">체크카드 혜택 그래프, 동시 적금 등 차별화 기능이 우연히 발견하지 않으면 영영 못 찾는 깊은 메뉴 구조에 매몰. 마케팅 ROI 손실 직결.</td>
+              <td class="factor-desc">체크카드 혜택·동시 적금 등 차별화 기능이 깊은 메뉴에 매몰 — 마케팅 ROI 손실.</td>
             </tr>
             <tr>
               <td class="factor-rank"><span class="rank-id">A3</span><span class="status gap">●○○ Gap</span></td>
               <td class="factor-name">앱 만족도 정체</td>
               <td class="factor-data">76.0pt · 3위</td>
-              <td class="factor-desc">컨슈머인사이트 인뱅 3사 중 최하위. 토스(76.8)·카뱅(76.1)과 미세하지만 누적 격차. 이용속도·신기술은 호평이나 개인정보 관리·상담 채널 접근성은 약점.</td>
+              <td class="factor-desc">컨슈머인사이트 인뱅 3사 중 최하위(토스 76.8, 카뱅 76.1) — 개인정보·상담 채널이 약점.</td>
             </tr>
             <tr>
               <td class="factor-rank"><span class="rank-id">A4</span><span class="status gap">●○○ Gap</span></td>
               <td class="factor-name">해외 사용 단절</td>
               <td class="factor-data">전화 인증 한국번호</td>
-              <td class="factor-desc">해외 체류 시 앱 재설치 인증 차단. 서학개미·해외출장 사용자 락인 실패. 글로벌 재평가 축의 "해외주식 허브" 전략과 정면 충돌.</td>
+              <td class="factor-desc">해외 체류 시 앱 재설치 인증 차단 — 서학개미·해외출장 사용자 락인 실패.</td>
             </tr>
             <tr>
               <td class="factor-rank"><span class="rank-id">A5</span><span class="status gap">●○○ Gap</span></td>
               <td class="factor-name">피드백 반영 지연</td>
               <td class="factor-data">"1달 넘게 방치"</td>
-              <td class="factor-desc">사용자가 직접 고객센터 신고한 UI 결함이 1개월 이상 미수정. 토스의 빠른 이터레이션 사이클 대비 격차. "케뱅 직원은 정작 이 앱을 쓰나?" 반응 누적.</td>
+              <td class="factor-desc">UI 결함 1개월 이상 미수정 — 토스 이터레이션 사이클 대비 격차.</td>
             </tr>
           </tbody>
         </table>
 
         <!-- ─ 1.2.2 브랜드 -->
         <div class="sub-h">
-          <div class="sub-h-num mono">§ 1.2.2</div>
+          <div class="sub-h-num mono">1.2.2</div>
           <div class="sub-h-title">브랜드 · Brand Identity</div>
         </div>
 
@@ -2323,44 +3327,44 @@
               <td class="factor-rank"><span class="rank-id">B1</span><span class="status gap">●○○ Gap</span></td>
               <td class="factor-name">행장 교체마다 CI 변경</td>
               <td class="factor-data">3회 / 7년</td>
-              <td class="factor-desc">행장이 바뀔 때마다 슬로건과 앱 아이콘까지 교체. "M뱅크" CI 사례처럼 내부 전문가 반대 묵살 사례 존재. 브랜드 자산 누적 불가능한 구조.</td>
+              <td class="factor-desc">행장 교체마다 슬로건·앱 아이콘까지 교체 ("M뱅크" 사례) — 브랜드 자산 누적 불가.</td>
             </tr>
             <tr>
               <td class="factor-rank"><span class="rank-id">B2</span><span class="status gap">●○○ Gap</span></td>
               <td class="factor-name">시그니처 캐릭터 부재</td>
               <td class="factor-data">vs 라이언·춘식이</td>
-              <td class="factor-desc">카뱅 = 카카오프렌즈, 토스 = 디자인 일관성·캐릭터 미니. 케뱅은 "기분 좋은 금융생활" 슬로건 외 락인할 캐릭터·아이콘 자산 없음. MZ 락인 실패의 직접 원인.</td>
+              <td class="factor-desc">카뱅 카카오프렌즈·토스 디자인 일관성 대비 케뱅은 락인할 캐릭터 자산 없음.</td>
             </tr>
             <tr>
               <td class="factor-rank"><span class="rank-id">B3</span><span class="status gap">●○○ Gap</span></td>
               <td class="factor-name">포지셔닝 모호</td>
               <td class="factor-data">"비교·따지는 은행"</td>
-              <td class="factor-desc">토스 = 간편함, 카뱅 = 친근함. 케뱅 = ? 한 단어로 정의 불가. 슬로건은 추상적이고, 핵심 차별점은 "파킹통장 금리 0.1% 우위"라는 기능 수준에 머묾.</td>
+              <td class="factor-desc">토스=간편, 카뱅=친근. 케뱅은 한 단어 정의 불가 — 차별점이 "파킹통장 금리 0.1%" 수준.</td>
             </tr>
             <tr>
               <td class="factor-rank"><span class="rank-id">B4</span><span class="status partial">●●○ Partial</span></td>
               <td class="factor-name">업비트 종속 이미지</td>
               <td class="factor-data">예치금 21%</td>
-              <td class="factor-desc">대중 인식에서 "코인 거래용 은행"으로 고착. 가상자산 비투자자에게는 진입 동기 자체가 약함. 브랜드 카테고리 폭이 좁아짐.</td>
+              <td class="factor-desc">"코인 거래용 은행" 인식 고착 — 비투자자 진입 동기 약화.</td>
             </tr>
             <tr>
               <td class="factor-rank"><span class="rank-id">B5</span><span class="status gap">●○○ Gap</span></td>
               <td class="factor-name">차별화 메시지 부재</td>
               <td class="factor-data">vs 토스·카뱅</td>
-              <td class="factor-desc">토스는 "간편한 송금", 카뱅은 "친근한 캐릭터·26주 적금" 같은 명확한 단일 메시지를 보유. 케뱅은 "파킹통장 금리"·"체크카드 혜택"·"SOHO" 등 메시지가 분산되어 핵심 단어를 점유하지 못함.</td>
+              <td class="factor-desc">토스 "간편 송금", 카뱅 "26주 적금" 같은 단일 메시지 부재 — 핵심 단어 미점유.</td>
             </tr>
             <tr>
               <td class="factor-rank"><span class="rank-id">B6</span><span class="status gap">●○○ Gap</span></td>
               <td class="factor-name">보이스 & 톤 불일치</td>
               <td class="factor-data">화면별 톤 편차</td>
-              <td class="factor-desc">알림·에러·거절 메시지가 시중은행식 딱딱함과 토스식 친근함 사이에서 흔들림. 한도제한이 욕설 리뷰로 번지는 직접 원인. 카피 거버넌스·메시지 가이드 부재.</td>
+              <td class="factor-desc">알림·에러·거절 메시지가 화면별 톤 흔들림 — 한도제한 욕설 리뷰의 직접 원인.</td>
             </tr>
           </tbody>
         </table>
 
         <!-- ─ 1.2.3 캠페인 -->
         <div class="sub-h">
-          <div class="sub-h-num mono">§ 1.2.3</div>
+          <div class="sub-h-num mono">1.2.3</div>
           <div class="sub-h-title">캠페인 · Marketing</div>
         </div>
 
@@ -2421,7 +3425,7 @@
 
         <!-- ─ 1.2.4 UX -->
         <div class="sub-h">
-          <div class="sub-h-num mono">§ 1.2.4</div>
+          <div class="sub-h-num mono">1.2.4</div>
           <div class="sub-h-title">앱 서비스 UX · User Experience</div>
         </div>
 
@@ -2482,7 +3486,7 @@
 
         <!-- ─ 1.2.5 고객지원 -->
         <div class="sub-h">
-          <div class="sub-h-num mono">§ 1.2.5</div>
+          <div class="sub-h-num mono">1.2.5</div>
           <div class="sub-h-title">고객지원 · Customer Support</div>
         </div>
 
@@ -2543,7 +3547,7 @@
 
         <!-- ─ 1.2.6 온보딩 -->
         <div class="sub-h">
-          <div class="sub-h-num mono">§ 1.2.6</div>
+          <div class="sub-h-num mono">1.2.6</div>
           <div class="sub-h-title">온보딩 & 활성화 · Onboarding</div>
         </div>
 
@@ -2585,14 +3589,14 @@
               <td class="factor-rank"><span class="rank-id">O5</span><span class="status gap">●○○ Gap</span></td>
               <td class="factor-name">바이럴·추천 루프 부재</td>
               <td class="factor-data">vs 토스 친구 송금</td>
-              <td class="factor-desc">추천인 코드·친구 초대 보상 시스템 약함. 토스의 친구 송금·카뱅 모임통장처럼 자체 바이럴 루프 생성하는 상품 부재. 마케팅 의존도 ↑ CAC 누수.</td>
+              <td class="factor-desc">추천인 코드·친구 초대 보상 약함. 토스 친구 송금·카뱅 모임통장 같은 바이럴 루프 부재 — 마케팅 의존도 증가, CAC 누수.</td>
             </tr>
           </tbody>
         </table>
 
         <!-- ─ 1.2.7 보안·신뢰 -->
         <div class="sub-h">
-          <div class="sub-h-num mono">§ 1.2.7</div>
+          <div class="sub-h-num mono">1.2.7</div>
           <div class="sub-h-title">보안 & 신뢰 · Trust & Security</div>
         </div>
 
@@ -2641,7 +3645,7 @@
 
         <!-- ─ 1.2.8 데이터·개인화 -->
         <div class="sub-h">
-          <div class="sub-h-num mono">§ 1.2.8</div>
+          <div class="sub-h-num mono">1.2.8</div>
           <div class="sub-h-title">데이터 & 개인화 · Data & Personalization</div>
         </div>
 
@@ -2690,12 +3694,12 @@
 
         <!-- ─ 1.2.9 AI 활용 -->
         <div class="sub-h">
-          <div class="sub-h-num mono">§ 1.2.9</div>
+          <div class="sub-h-num mono">1.2.9</div>
           <div class="sub-h-title">AI 활용 · AI Powered Bank</div>
         </div>
 
         <p class="sec-intro">
-          케뱅은 2025년부터 <strong>"AI Powered Bank"</strong>를 슬로건으로 인터넷은행 최초 금융 특화 프라이빗 LLM 도입(2025.02), 금융권 최초 KT AI 보이스피싱 실시간 탐지(2025.03), AI 통합검색(2026.04), 17건의 AI 특허 출원 등 가시적 성과를 축적. 그러나 이 자산이 § 1.2.1-1.2.8의 다른 접점·캠페인·IR로 충분히 확산되지 않음. 자산은 있는데 가치 변환이 약한 상태.
+          케뱅은 2025년부터 <strong>"AI Powered Bank"</strong>를 슬로건으로 인터넷은행 최초 금융 특화 프라이빗 LLM 도입(2025.02), 금융권 최초 KT AI 보이스피싱 실시간 탐지(2025.03), AI 통합검색(2026.04), 17건의 AI 특허 출원 등 가시적 성과를 축적. 그러나 이 자산이 1.2.1-1.2.8의 다른 접점·캠페인·IR로 충분히 확산되지 않음. 자산은 있는데 가치 변환이 약한 상태.
         </p>
 
         <table class="factor-table">
@@ -2718,52 +3722,52 @@
               <td class="factor-rank"><span class="rank-id">AI2</span><span class="status done">●●● Done</span></td>
               <td class="factor-name">AI 보이스피싱 탐지 우위</td>
               <td class="factor-data">금융권 최초</td>
-              <td class="factor-desc">KT 후후 앱 연동으로 통화 내용 실시간 분석·경고. § 1.2.7 T3(이상거래 UX)의 직접 해법이자 § 1.2.7 T1(개인정보 신뢰)의 강력한 시그널. 그러나 마케팅·캠페인 자산화 부족.</td>
+              <td class="factor-desc">KT 후후 앱 연동으로 통화 내용 실시간 분석·경고. 1.2.7 T3(이상거래 UX)의 직접 해법이자 1.2.7 T1(개인정보 신뢰)의 강력한 시그널. 그러나 마케팅·캠페인 자산화 부족.</td>
             </tr>
             <tr>
               <td class="factor-rank"><span class="rank-id">AI3</span><span class="status done">●●● Done</span></td>
               <td class="factor-name">AI 통합검색 출시</td>
               <td class="factor-data">2026.04</td>
-              <td class="factor-desc">"카드 잃어버렸어요" 같은 자연어 검색으로 화면 안내. § 1.2.5 S4(FAQ 빈약)와 S6(챗봇 한계)의 직접 해법. 셀프서비스 전환의 핵심 자산이나 출시 후 후속 확산 가시성 약함.</td>
+              <td class="factor-desc">"카드 잃어버렸어요" 같은 자연어 검색으로 화면 안내. 1.2.5 S4(FAQ 빈약)와 S6(챗봇 한계)의 직접 해법. 셀프서비스 전환의 핵심 자산이나 출시 후 후속 확산 가시성 약함.</td>
             </tr>
             <tr>
               <td class="factor-rank"><span class="rank-id">AI4</span><span class="status done">●●● Done</span></td>
               <td class="factor-name">17건 AI 특허 출원</td>
               <td class="factor-data">2025.01-05</td>
-              <td class="factor-desc">개인화 추천·민원 자동 분류·얼굴 인식 사기 예방·신분증 위·변조 식별 등. § 1.2.4 U4(개인화) + § 1.2.7 T4(위기 대응) + § 1.2.8 D3(AI 자산관리)의 기반 자산. IP 자산이나 제품 가시화 격차.</td>
+              <td class="factor-desc">개인화 추천·민원 자동 분류·얼굴 인식 사기 예방·신분증 위·변조 식별 등. 1.2.4 U4(개인화) + 1.2.7 T4(위기 대응) + 1.2.8 D3(AI 자산관리)의 기반 자산. IP 자산이나 제품 가시화 격차.</td>
             </tr>
             <tr>
               <td class="factor-rank"><span class="rank-id">AI5</span><span class="status gap">●○○ Gap</span></td>
               <td class="factor-name">AI 자산 ↔ 접점 연결 부재</td>
               <td class="factor-data">자산은 있고 가치 변환 약함</td>
-              <td class="factor-desc">AI 기술 자산(LLM·탐지·검색·특허)은 축적되었으나 § 1.2.2 브랜드, § 1.2.3 캠페인, § 1.2.4 UX에 충분히 통합되지 않음. "AI Powered Bank" 슬로건이 고객 일상 체감으로 변환되는 흐름 부재.</td>
+              <td class="factor-desc">AI 기술 자산(LLM·탐지·검색·특허)은 축적되었으나 1.2.2 브랜드, 1.2.3 캠페인, 1.2.4 UX에 충분히 통합되지 않음. "AI Powered Bank" 슬로건이 고객 일상 체감으로 변환되는 흐름 부재.</td>
             </tr>
           </tbody>
         </table>
 
+          </div>
+        </details>
+
         <div class="takeaway">
-          <div class="takeaway-label mono">Takeaway</div>
-          AI는 케뱅이 토스·카뱅 대비 <strong>유일하게 우위 또는 동률을 가진 영역</strong> (인뱅 최초 LLM·금융권 최초 보이스피싱 AI). 그러나 § 1.2.1-1.2.8 다른 접점과 분리된 채 IT 자산으로만 존재. <strong>핵심 해법은 AI 자산의 8개 접점 전반 확산</strong> — 보이스피싱 AI(AI2)는 브랜드 신뢰 캠페인으로, AI 통합검색(AI3)은 고객지원·온보딩으로, 17건 특허(AI4)는 개인화·보안 제품으로 가치 변환. 매트릭스 9번째 행으로 AI를 별도 추가하는 것이 정합.
+          <div class="takeaway-label mono">1.2 통합 Takeaway</div>
+          9개 영역의 공통 원인은 <strong>"일관된 정체성·자산 누적의 부재"</strong>. 행장 교체마다 CI 리셋 → 브랜드·캠페인·UX·데이터 누적 불가 → AI 자산은 축적되었으나 다른 접점으로 가치 변환 안됨. <strong>해법은 트랙 B 18개 액션</strong>: Phase 1 신뢰 시그널(B1-B6) → Phase 2 개인화·자산화(B7-B12) → Phase 3 차별화(B13-B18)로 9개 접점을 순차 개선.
         </div>
 
-        <!-- ─ 1.2 통합 Takeaway -->
-        <div class="takeaway">
-          <div class="takeaway-label mono">§ 1.2 통합 Takeaway</div>
-          9개 영역 문제의 공통 원인은 <strong>"일관된 정체성·자산 누적·가치 변환의 부재"</strong>. 행장 교체마다 CI·전략 리셋 → 브랜드 자산 누적 불가 → 캠페인은 단기 가격 경쟁 → 앱은 잦은 리뉴얼로 학습 비용 → UX는 디자인 시스템 일관성 결손 → 셀프서비스 실패로 상담 의존 → 데이터·개인화 자산 미구축으로 MAU 누수 → <strong>AI 자산은 축적되었으나 다른 접점으로 가치 변환되지 못함</strong>. 모든 영역의 상위 해법은 <strong>① 장기 일관성 거버넌스(브랜드 가드레일), ② 디자인 시스템 운영 일원화, ③ AI·데이터 자산의 접점 전반 통합</strong>의 3축. 특히 ③은 케뱅의 차별화 자산을 외인 멀티플로 직접 연결하는 가장 빠른 경로.
-        </div>
-        <div class="takeaway" style="border-left-color: #b87a1a; background: #fdf6e3;">
-          <div class="takeaway-label mono">§ 1.2 → 트랙 B 액션 매핑</div>
-          9개 접점 진단이 트랙 B 18개 액션으로 분해되는 흐름. <strong>App Phase 1 (신뢰 시그널)</strong>: § 1.2.7 보안(B1) · § 1.2.5 고객지원(B2·B3·B5) · § 1.2.1 앱(B4) · § 1.2.7 신뢰(B6). <strong>App Phase 2 (개인화·자산화)</strong>: § 1.2.8 데이터(B7) · § 1.2.6 온보딩(B8) · § 1.1 SOHO(B9) · § 1.2.4 UX(B10) · § 1.2.9 AI(B11) · § 1.2.2 브랜드(B12). <strong>App Phase 3 (차별화·카테고리)</strong>: § 1.2.8·§ 1.2.9(B13) · § 1.2.4(B14·B15) · § 1.2.8 데일리(B16) · § 1.2.4 디자인 시스템(B17) · 최종 KPI(B18). 진단이 곧 액션 번호로 연결되는 일관 구조.
-        </div>
+        <!-- 1.3 매트릭스 -->
+        <details class="diag">
+          <summary>
+            <span><span class="diag-tag mono">상세 자료</span>1.3 매트릭스 + 1.4 3사 비교 (카카오뱅크 / 토스뱅크)</span>
+            <span class="diag-count mono">매트릭스 · 히트맵 · 격차 카드</span>
+          </summary>
+          <div class="diag-content" style="padding: 8px 4px;">
 
-        <!-- § 1.3 매트릭스 -->
         <div class="sub-h">
-          <div class="sub-h-num mono">§ 1.3</div>
+          <div class="sub-h-num mono">1.3</div>
           <div class="sub-h-title">고객 접점 × 3관점 매트릭스</div>
         </div>
 
         <p class="sec-intro">
-          § 1.2에서 진단한 9개 고객 접점이 누구에게 어떻게 보이는가. <strong>한 항목을 가로로 읽으면 → 고객이 느끼는 것 → 회사가 측정하는 것 → 투자자가 평가하는 것</strong>이 차례로 나옴. 접점 하나의 개선이 어떤 경로로 외인 멀티플까지 도달하는지의 가치 사슬.
+          1.2에서 진단한 9개 고객 접점이 누구에게 어떻게 보이는가. <strong>한 항목을 가로로 읽으면 → 고객이 느끼는 것 → 회사가 측정하는 것 → 투자자가 평가하는 것</strong>이 차례로 나옴. 접점 하나의 개선이 어떤 경로로 외인 멀티플까지 도달하는지의 가치 사슬.
         </p>
 
         <div class="matrix-flow">
@@ -2800,7 +3804,7 @@
           <tbody>
             <tr>
               <th>
-                <span class="ph-tag mono">§ 1.2.1</span>
+                <span class="ph-tag mono">1.2.1</span>
                 <span class="ph-name">앱</span>
               </th>
               <td>
@@ -2821,7 +3825,7 @@
             </tr>
             <tr>
               <th>
-                <span class="ph-tag mono">§ 1.2.2</span>
+                <span class="ph-tag mono">1.2.2</span>
                 <span class="ph-name">브랜드</span>
               </th>
               <td>
@@ -2837,22 +3841,22 @@
               <td>
                 <span class="m-title">카테고리 리더십</span>
                 <span class="m-body">"한국의 Nubank" 글로벌 비교 스토리에 진입할 수 있는 브랜드 자산.</span>
-                <span class="m-data mono">PBR 1.0× → 1.4×</span>
+                <span class="m-data mono">PBR 0.97× → 1.4×</span>
               </td>
             </tr>
             <tr>
               <th>
-                <span class="ph-tag mono">§ 1.2.3</span>
+                <span class="ph-tag mono">1.2.3</span>
                 <span class="ph-name">캠페인</span>
               </th>
               <td>
                 <span class="m-title">"쟤네 또 그거 한다"</span>
                 <span class="m-body">반복 노출되는 일관 메시지·캐릭터. 가격 이벤트가 아닌 정체성 인식.</span>
-                <span class="m-data mono">광고 상기율 ↑</span>
+                <span class="m-data mono">광고 상기율 증가</span>
               </td>
               <td>
                 <span class="m-title">CAC 절감·LTV 상승</span>
-                <span class="m-body">오가닉 도달 비중 ↑, 페이드 미디어 의존도 ↓. 동일 예산으로 더 큰 효과.</span>
+                <span class="m-body">오가닉 도달 비중 증가, 페이드 미디어 의존도 감소 — 동일 예산으로 더 큰 효과.</span>
                 <span class="m-data mono">CAC·LTV·오가닉 비중</span>
               </td>
               <td>
@@ -2863,7 +3867,7 @@
             </tr>
             <tr>
               <th>
-                <span class="ph-tag mono">§ 1.2.4</span>
+                <span class="ph-tag mono">1.2.4</span>
                 <span class="ph-name">UX</span>
               </th>
               <td>
@@ -2884,7 +3888,7 @@
             </tr>
             <tr>
               <th>
-                <span class="ph-tag mono">§ 1.2.5</span>
+                <span class="ph-tag mono">1.2.5</span>
                 <span class="ph-name">고객지원</span>
               </th>
               <td>
@@ -2894,7 +3898,7 @@
               </td>
               <td>
                 <span class="m-title">민원율·리텐션</span>
-                <span class="m-body">금감원 민원 발생률 ↓, 1콜 해결률 ↑, 리텐션 개선. 운영비도 절감.</span>
+                <span class="m-body">금감원 민원 발생률 감소, 1콜 해결률 증가, 리텐션 개선 — 운영비 절감.</span>
                 <span class="m-data mono">민원율·NPS·리텐션</span>
               </td>
               <td>
@@ -2905,7 +3909,7 @@
             </tr>
             <tr>
               <th>
-                <span class="ph-tag mono">§ 1.2.6</span>
+                <span class="ph-tag mono">1.2.6</span>
                 <span class="ph-name">온보딩</span>
               </th>
               <td>
@@ -2926,7 +3930,7 @@
             </tr>
             <tr>
               <th>
-                <span class="ph-tag mono">§ 1.2.7</span>
+                <span class="ph-tag mono">1.2.7</span>
                 <span class="ph-name">보안·신뢰</span>
               </th>
               <td>
@@ -2935,7 +3939,7 @@
                 <span class="m-data mono">신뢰 점수 상승</span>
               </td>
               <td>
-                <span class="m-title">사기·민원 ↓ 리텐션 ↑</span>
+                <span class="m-title">사기·민원 감소, 리텐션 증가</span>
                 <span class="m-body">이상거래·보이스피싱 대응 성숙. 자산 락인 강화.</span>
                 <span class="m-data mono">사고율·민원 발생률</span>
               </td>
@@ -2947,7 +3951,7 @@
             </tr>
             <tr>
               <th>
-                <span class="ph-tag mono">§ 1.2.8</span>
+                <span class="ph-tag mono">1.2.8</span>
                 <span class="ph-name">데이터·개인화</span>
               </th>
               <td>
@@ -2968,7 +3972,7 @@
             </tr>
             <tr>
               <th>
-                <span class="ph-tag mono">§ 1.2.9</span>
+                <span class="ph-tag mono">1.2.9</span>
                 <span class="ph-name">AI 활용</span>
               </th>
               <td>
@@ -2992,17 +3996,17 @@
 
         <div class="takeaway">
           <div class="takeaway-label mono">Reading the Matrix</div>
-          가로축은 <strong>"같은 접점이 누구에게 어떻게 보이는가"</strong>의 변환 흐름. § 1.2.4 UX 개선은 고객에게는 "마찰 없는 흐름", 기업에는 "전환율 KPI", 외인에는 "프로덕트 멀티플"로 가치 변환. 접점 하나의 개선이 9개 행 전체에 파급되므로, <strong>가장 많은 행에 동시 영향 주는 인프라 자산(디자인 시스템·브랜드 가드레일·AI 플랫폼)의 우선 투자가 합리적</strong>. 특히 § 1.2.9 AI는 § 1.2.7·1.2.5·1.2.4·1.2.8 4개 접점에 동시 파급되는 최고 레버리지 자산.
+          가로축은 <strong>같은 접점이 누구에게 어떻게 보이는가</strong>의 변환 흐름. <strong>가장 많은 행에 동시 파급되는 인프라(디자인 시스템·AI 플랫폼)의 우선 투자가 합리적</strong>. 1.2.9 AI는 4개 접점에 동시 작용하는 최고 레버리지 자산.
         </div>
 
-        <!-- § 1.4 3사 비교 -->
+        <!-- 1.4 3사 비교 -->
         <div class="sub-h">
-          <div class="sub-h-num mono">§ 1.4</div>
+          <div class="sub-h-num mono">1.4</div>
           <div class="sub-h-title">3사 비교 · 카카오뱅크 / 토스뱅크</div>
         </div>
 
         <p class="sec-intro">
-          § 1.2 9개 접점에서 케이뱅크의 위치를 인터넷전문은행 3사 기준으로 비교. 같은 ●●●/●●○/●○○ 기준으로 평가. <strong>토스뱅크는 비상장 상태로 일부 지표 미공개</strong>(n/a)이나 정성 비교 가능.
+          1.2 9개 접점에서 케이뱅크의 위치를 인터넷전문은행 3사 기준으로 비교. 같은 ●●●/●●○/●○○ 기준으로 평가. <strong>토스뱅크는 비상장 상태로 일부 지표 미공개</strong>(n/a)이나 정성 비교 가능.
         </p>
 
         <div class="compare-intro">
@@ -3035,7 +4039,7 @@
           </thead>
           <tbody>
             <tr>
-              <th><span class="h-tag mono">§ 1.2.1</span>앱</th>
+              <th><span class="h-tag mono">1.2.1</span>앱</th>
               <td class="focus-col">
                 <div class="cell-status">
                   <span class="status partial">●●○ Partial</span>
@@ -3056,7 +4060,7 @@
               </td>
             </tr>
             <tr>
-              <th><span class="h-tag mono">§ 1.2.2</span>브랜드</th>
+              <th><span class="h-tag mono">1.2.2</span>브랜드</th>
               <td class="focus-col">
                 <div class="cell-status">
                   <span class="status gap">●○○ Gap</span>
@@ -3077,7 +4081,7 @@
               </td>
             </tr>
             <tr>
-              <th><span class="h-tag mono">§ 1.2.3</span>캠페인</th>
+              <th><span class="h-tag mono">1.2.3</span>캠페인</th>
               <td class="focus-col">
                 <div class="cell-status">
                   <span class="status gap">●○○ Gap</span>
@@ -3098,7 +4102,7 @@
               </td>
             </tr>
             <tr>
-              <th><span class="h-tag mono">§ 1.2.4</span>UX</th>
+              <th><span class="h-tag mono">1.2.4</span>UX</th>
               <td class="focus-col">
                 <div class="cell-status">
                   <span class="status partial">●●○ Partial</span>
@@ -3114,16 +4118,16 @@
               <td>
                 <div class="cell-status">
                   <span class="status done">●●● Done</span>
-                  <span class="cell-note">단일 피드 마찰↓</span>
+                  <span class="cell-note">단일 피드 마찰 낮음</span>
                 </div>
               </td>
             </tr>
             <tr>
-              <th><span class="h-tag mono">§ 1.2.5</span>고객지원</th>
+              <th><span class="h-tag mono">1.2.5</span>고객지원</th>
               <td class="focus-col">
                 <div class="cell-status">
                   <span class="status gap">●○○ Gap</span>
-                  <span class="cell-note">채널 접근성↓</span>
+                  <span class="cell-note">채널 접근성 낮음</span>
                 </div>
               </td>
               <td>
@@ -3140,7 +4144,7 @@
               </td>
             </tr>
             <tr>
-              <th><span class="h-tag mono">§ 1.2.6</span>온보딩</th>
+              <th><span class="h-tag mono">1.2.6</span>온보딩</th>
               <td class="focus-col">
                 <div class="cell-status">
                   <span class="status partial">●●○ Partial</span>
@@ -3161,7 +4165,7 @@
               </td>
             </tr>
             <tr>
-              <th><span class="h-tag mono">§ 1.2.7</span>보안·신뢰</th>
+              <th><span class="h-tag mono">1.2.7</span>보안·신뢰</th>
               <td class="focus-col">
                 <div class="cell-status">
                   <span class="status partial">●●○ Partial</span>
@@ -3182,7 +4186,7 @@
               </td>
             </tr>
             <tr>
-              <th><span class="h-tag mono">§ 1.2.8</span>데이터·개인화</th>
+              <th><span class="h-tag mono">1.2.8</span>데이터·개인화</th>
               <td class="focus-col">
                 <div class="cell-status">
                   <span class="status gap">●○○ Gap</span>
@@ -3203,7 +4207,7 @@
               </td>
             </tr>
             <tr>
-              <th><span class="h-tag mono">§ 1.2.9</span>AI 활용</th>
+              <th><span class="h-tag mono">1.2.9</span>AI 활용</th>
               <td class="focus-col">
                 <div class="cell-status">
                   <span class="status done">●●● Done</span>
@@ -3234,18 +4238,18 @@
 
         <div class="takeaway">
           <div class="takeaway-label mono">Heatmap Reading</div>
-          9개 접점 중 케뱅이 <strong>●●● Done에 해당하는 영역은 § 1.2.9 AI 활용 단 1개</strong>. 카뱅·토스는 6개 영역에서 Done 수준. 격차는 명확하나, <strong>AI는 케뱅의 단일 우위 영역이자 카뱅·토스가 ●●○ Partial 수준에 머무는 영역</strong>. 즉 AI 자산을 다른 8개 접점에 통합하면 격차가 6개 영역에서 동시에 줄어들 수 있는 유일한 레버리지 자산.
+          9개 접점 중 케뱅 <strong>Done은 1.2.9 AI 1개</strong>. 카뱅·토스는 6개 Done. <strong>AI 자산을 다른 8개 접점에 통합</strong>하면 격차를 동시에 줄일 수 있는 유일 레버리지.
         </div>
 
         <!-- 격차 상세 - 가장 큰 3개 영역만 카드 형태로 -->
         <div class="sub-h" style="margin-top: 32px;">
-          <div class="sub-h-num mono">§ 1.4.1</div>
+          <div class="sub-h-num mono">1.4.1</div>
           <div class="sub-h-title">격차가 큰 핵심 영역 상세 비교</div>
         </div>
 
         <div class="compare-card">
           <div class="compare-card-head">
-            <span class="compare-card-num mono">§ 1.2.2</span>
+            <span class="compare-card-num mono">1.2.2</span>
             <span class="compare-card-title">브랜드 · 가장 큰 격차</span>
           </div>
           <div class="compare-card-body">
@@ -3269,7 +4273,7 @@
 
         <div class="compare-card">
           <div class="compare-card-head">
-            <span class="compare-card-num mono">§ 1.2.8</span>
+            <span class="compare-card-num mono">1.2.8</span>
             <span class="compare-card-title">데이터 · 개인화</span>
           </div>
           <div class="compare-card-body">
@@ -3293,7 +4297,7 @@
 
         <div class="compare-card">
           <div class="compare-card-head">
-            <span class="compare-card-num mono">§ 1.2.9</span>
+            <span class="compare-card-num mono">1.2.9</span>
             <span class="compare-card-title">AI 활용 · 케뱅 상대적 우위 영역</span>
           </div>
           <div class="compare-card-body">
@@ -3316,15 +4320,14 @@
         </div>
 
         <div class="takeaway">
-          <div class="takeaway-label mono">§ 1.4 Takeaway</div>
-          3사 비교의 메시지는 두 측면. 첫째, <strong>케뱅은 브랜드·캠페인·UX·데이터 등 7개 접점에서 카뱅·토스 대비 후행</strong>이며 즉시 격차 줄이기보다 단계적 개선이 현실적. 둘째, <strong>AI 영역은 케뱅이 가시 시그널(인뱅 최초·금융권 최초)이 가장 명확</strong>한 영역이나, 카뱅 AI 신용평가는 매출 직결도가 더 깊고 토스는 본체 자산 활용 강점이 있음. "유일한 우위"보다 <strong>"가시 시그널이 가장 강한 영역"</strong>이라는 표현이 정확. AI 자산의 매출·KPI 기여 정량화가 다음 과제.
-        </div>
-        <div class="takeaway" style="border-left-color: #b87a1a; background: #fdf6e3;">
-          <div class="takeaway-label mono">3사 격차 → 트랙 B 액션 매핑</div>
-          격차가 가장 큰 3개 영역의 트랙 B 액션 매핑. <strong>브랜드(§ 1.2.2)</strong>: B12 보이스·톤 일관화로 메시지 일관성부터 시작 (브랜드 자산 누적은 장기 과제이나 톤 일관화는 즉시 가능). <strong>데이터·개인화(§ 1.2.8)</strong>: B7 카테고라이징 → B13 AI 자산관리로 단계 추격, 카뱅 신용점수·토스 자산관리에 직접 대응. <strong>AI(§ 1.2.9)</strong>: B1·B2 가시화 → B11 챗봇 진화 → B13 AI 자산관리로 자산을 매출로 전환. 트랙 B 18개 액션의 우선순위 결정 기준은 "이 영역에서 카뱅·토스와 격차가 얼마나 큰가" + "AI 자산을 어떻게 활용하나" 두 축.
+          <div class="takeaway-label mono">1.4 Takeaway</div>
+          <strong>케뱅은 9개 접점 중 7개에서 카뱅·토스 대비 후행</strong>. 즉시 격차 줄이기보다 단계적 개선이 현실. AI 영역만 가시 시그널이 강한 유일 영역이나 매출 직결도는 카뱅 신용평가가 더 깊음. <strong>해법은 트랙 B B1·B2·B7·B11·B13</strong>: AI 자산 가시화 → 데이터 개인화 → AI 자산관리로 격차 축소.
         </div>
 
-        <!-- 향후 아이데이션은 § 1.5, § 1.6 ... 로 누적 -->
+          </div>
+        </details>
+
+        <!-- 향후 아이데이션은 1.5, 1.6 ... 로 누적 -->
 
       </section>
     </div>
@@ -3336,17 +4339,28 @@
 
       <section>
         <div class="sec-h">
-          <div class="sec-h-num mono">§ 05</div>
+          <div class="sec-h-num mono">05</div>
           <div class="sec-h-title">정부 디스카운트</div>
           <div class="sec-h-sub">Government · Korea Discount</div>
         </div>
-        <p class="sec-intro">
-          코리아 디스카운트와 인터넷전문은행 정책 변동성, 9월 오버행이 단기 주가의 가장 큰 변수. 외국인과 국민연금이 모두 매도 또는 비매수 상태인 이유를 먼저 진단한 뒤, 정책 정렬과 거버넌스 시그널로 해소 경로를 설계.
-        </p>
 
-        <!-- § 2.1 외국인 -->
+        <div class="tldr">
+          <div class="tldr-label mono">TL;DR</div>
+          <div class="tldr-content">
+            <strong>외국인 소진율 0.04% (사실상 부재)</strong>는 펀더멘털이 아니라 "보이지 않음"의 문제. 주주환원·Value-up·영문 IR·정량 KPI 공시가 모두 부재. <strong>9월 보호예수 1.19억주 해제와 10월 업비트 만료가 임박</strong>한 단기 시한. <strong>해법은 트랙 A Big Bet 01·02</strong>: 락업 협상 + 자사주 매입 + Value-up + AI KPI 공시 동시 가동.
+          </div>
+        </div>
+
+        <details class="diag">
+          <summary>
+            <span><span class="diag-tag mono">진단 상세</span>외국인·국연 매도 진단 + 정책·거버넌스·주주환원·오버행 진단</span>
+            <span class="diag-count mono">2.1 - 2.9 · 9개 영역 · 약 35개 진단</span>
+          </summary>
+          <div class="diag-content" style="padding: 8px 4px;">
+
+        <!-- 2.1 외국인 -->
         <div class="sub-h">
-          <div class="sub-h-num mono">§ 2.1</div>
+          <div class="sub-h-num mono">2.1</div>
           <div class="sub-h-title">외국인은 왜 팔고 나가는가</div>
         </div>
 
@@ -3375,8 +4389,8 @@
             <tr>
               <td class="factor-rank">F3</td>
               <td class="factor-name">글로벌 멀티플 디스카운트</td>
-              <td class="factor-data">PBR 1.0× vs 6×</td>
-              <td class="factor-desc">Nubank PBR 6배, Revolut 7배 대비 케뱅 1.0배. 글로벌 디지털뱅킹 카테고리에 진입할 내러티브 부재.</td>
+              <td class="factor-data">PBR 0.97× vs 6×</td>
+              <td class="factor-desc">Nubank PBR 6배, Revolut 7배 대비 케뱅 0.97배 (청산가치 미만). 글로벌 디지털뱅킹 카테고리에 진입할 정량 시그널 부재.</td>
             </tr>
             <tr>
               <td class="factor-rank">F4</td>
@@ -3395,12 +4409,12 @@
 
         <div class="takeaway">
           <div class="takeaway-label mono">Takeaway</div>
-          외인 매도는 <strong>상장 설계 결함(F1-F2) + 글로벌 카테고리 미진입(F3-F4) + 매크로 역풍(F5)</strong>의 3중 압박. 설계 문제는 사후 해소 불가, F3-F4 개선이 외인 재진입의 유일한 레버.
+          외인 매도는 <strong>상장 설계 결함 + 카테고리 미진입 + 매크로 역풍</strong>의 3중 압박. F3-F4(글로벌 카테고리·AI 노출)가 외인 재진입의 유일 레버.
         </div>
 
-        <!-- § 2.2 국민연금 -->
+        <!-- 2.2 국민연금 -->
         <div class="sub-h">
-          <div class="sub-h-num mono">§ 2.2</div>
+          <div class="sub-h-num mono">2.2</div>
           <div class="sub-h-title">국민연금은 왜 팔고 나가는가</div>
         </div>
 
@@ -3417,7 +4431,7 @@
             <tr>
               <td class="factor-rank"><span class="rank-id">N1</span><span class="status gap">●○○ Gap</span></td>
               <td class="factor-name">인덱스 편입 미달</td>
-              <td class="factor-data">시총 3.36조</td>
+              <td class="factor-data">시총 2.27조</td>
               <td class="factor-desc">국민연금 국내주식 운용액 395조의 인덱스 추종 비중상 KOSPI 200·MSCI Korea 미편입 종목은 자동 비중 축소.</td>
             </tr>
             <tr>
@@ -3449,12 +4463,12 @@
 
         <div class="takeaway">
           <div class="takeaway-label mono">Takeaway</div>
-          국민연금은 단기 매도가 아닌 <strong>"편입 기준 미달에 따른 비중 미보유"</strong> 상태. 즉 적극적으로 파는 것이 아니라 사지 않는 것. N1(시총·지수 편입)과 N5(밸류업·거버넌스)를 충족하면 자연 매수 전환.
+          국민연금은 매도가 아닌 <strong>"편입 기준 미달에 따른 비중 미보유"</strong>. N1(지수)·N5(밸류업) 충족 시 자연 매수 전환.
         </div>
 
-        <!-- § 2.3 -->
+        <!-- 2.3 -->
         <div class="sub-h">
-          <div class="sub-h-num mono">§ 2.3</div>
+          <div class="sub-h-num mono">2.3</div>
           <div class="sub-h-title">문제 분석 · 해소 방안</div>
         </div>
 
@@ -3526,12 +4540,12 @@
 
         <!-- ─ 2.4 정책·규제 환경 -->
         <div class="sub-h">
-          <div class="sub-h-num mono">§ 2.4</div>
+          <div class="sub-h-num mono">2.4</div>
           <div class="sub-h-title">정책·규제 환경 진단</div>
         </div>
 
         <p class="sec-intro">
-          § 2.1-2.2에서 외인·국연이 공통으로 회피하는 "정책 리스크"의 실체를 5개 축으로 분해. 단순한 매크로 변수가 아니라 케뱅 사업모델에 직접 충돌하는 구조적 리스크들.
+          2.1-2.2에서 외인·국연이 공통으로 회피하는 "정책 리스크"의 실체를 5개 축으로 분해. 단순한 매크로 변수가 아니라 케뱅 사업모델에 직접 충돌하는 구조적 리스크들.
         </p>
 
         <table class="factor-table">
@@ -3579,12 +4593,12 @@
 
         <div class="takeaway">
           <div class="takeaway-label mono">Takeaway</div>
-          5개 정책 리스크가 모두 케뱅의 핵심 사업 영역과 직접 충돌. <strong>특히 R1(특례법 일몰)과 R4(가상자산 규제)는 케뱅 비즈니스 모델의 근간을 흔들 수 있는 구조적 리스크</strong>. 단순한 헷지를 넘어 SOHO·기업여신·해외주식 등 정책 영향이 적은 카테고리로의 사업 다각화가 정책 디스카운트 해소의 본질적 해법.
+          5개 정책 리스크 모두 케뱅 핵심 사업과 직접 충돌. 특히 <strong>R1(특례법 일몰)·R4(가상자산)는 비즈니스 모델 근간을 흔드는 구조적 리스크</strong>. SOHO·기업여신·해외주식 다각화가 본질 해법.
         </div>
 
         <!-- ─ 2.5 지배구조 -->
         <div class="sub-h">
-          <div class="sub-h-num mono">§ 2.5</div>
+          <div class="sub-h-num mono">2.5</div>
           <div class="sub-h-title">지배구조 · 의사결정 구조</div>
         </div>
 
@@ -3637,17 +4651,17 @@
 
         <div class="takeaway">
           <div class="takeaway-label mono">Takeaway</div>
-          지배구조 복잡성은 단기 해소가 불가능한 구조적 약점이나, <strong>사외이사 강화(G3) + 행장 임기 안정성 시그널(G4) + 내부 거버넌스 개선(G5)</strong> 3축은 단기 실행 가능. 특히 G4의 안정성은 § 1.2 전체 영역(브랜드·앱·캠페인) 누적 자산 형성의 전제 조건.
+          지배구조 복잡성은 단기 해소 불가이나 <strong>G3 사외이사 + G4 임기 안정성 + G5 내부 거버넌스</strong> 3축은 즉시 실행 가능. G4 안정성이 1.2 누적 자산 형성의 전제.
         </div>
 
         <!-- ─ 2.6 주주환원·자본정책 -->
         <div class="sub-h">
-          <div class="sub-h-num mono">§ 2.6</div>
+          <div class="sub-h-num mono">2.6</div>
           <div class="sub-h-title">주주환원 · 자본정책</div>
         </div>
 
         <p class="sec-intro">
-          § 2.2 N5(밸류업 미공시)의 심층 분해. 외인·국민연금이 매수 전환을 결정하는 가장 직접적인 신호. 현재 케뱅은 주주환원 정책의 거의 모든 항목에서 공시·로드맵 부재 상태.
+          2.2 N5(밸류업 미공시)의 심층 분해. 외인·국민연금이 매수 전환을 결정하는 가장 직접적인 신호. 현재 케뱅은 주주환원 정책의 거의 모든 항목에서 공시·로드맵 부재 상태.
         </p>
 
         <table class="factor-table">
@@ -3670,7 +4684,7 @@
               <td class="factor-rank"><span class="rank-id">V2</span><span class="status gap">●○○ Gap</span></td>
               <td class="factor-name">자사주 매입·소각 계획 부재</td>
               <td class="factor-data">로드맵 없음</td>
-              <td class="factor-desc">PBR 1.0× 수준에서 자사주 매입이 가장 효과적인 주가 부양책. BIS 24.46%로 자본 여력 충분. 그러나 매입·소각 계획 자체가 없음. 코리아 디스카운트의 직접 원인.</td>
+              <td class="factor-desc">PBR 0.97× (청산가치 미만)에서 자사주 매입이 가장 효과적인 주가 부양책. BIS 24.46%로 자본 여력 충분. 그러나 매입·소각 계획 자체가 없음. 코리아 디스카운트의 직접 원인.</td>
             </tr>
             <tr>
               <td class="factor-rank"><span class="rank-id">V3</span><span class="status gap">●○○ Gap</span></td>
@@ -3688,24 +4702,24 @@
               <td class="factor-rank"><span class="rank-id">V5</span><span class="status gap">●○○ Gap</span></td>
               <td class="factor-name">자본정책 의사결정 한계</td>
               <td class="factor-data">지배구조 제약</td>
-              <td class="factor-desc">§ 2.5 G1의 이중 통제 구조가 자본정책 신속한 의사결정 막음. 비씨카드·우리은행 간 이해상충 조율이 자사주·배당 결정의 병목. 거버넌스 개혁 없이는 V1-V3 실행 불가.</td>
+              <td class="factor-desc">2.5 G1의 이중 통제 구조가 자본정책 신속한 의사결정 막음. 비씨카드·우리은행 간 이해상충 조율이 자사주·배당 결정의 병목. 거버넌스 개혁 없이는 V1-V3 실행 불가.</td>
             </tr>
           </tbody>
         </table>
 
         <div class="takeaway">
           <div class="takeaway-label mono">Takeaway</div>
-          V1-V4는 <strong>"하지 않은 것"이 문제이지, "할 수 없는 것"은 아님</strong>. 즉 실행 의지·거버넌스 합의만 있으면 단기간에 시그널 가능. 특히 <strong>V3(Value-up 편입)은 가장 빠른 패시브 자금 트리거</strong>이자 정부 정책에 동조하는 가장 강한 시그널. 6월 내 의사결정 권장.
+          V1-V4는 <strong>"하지 않은 것"이지 "할 수 없는 것"이 아님</strong>. 실행 의지·거버넌스 합의로 즉시 가능. <strong>V3 Value-up 편입이 가장 빠른 패시브 자금 트리거</strong>. 6월 내 결정 권장.
         </div>
 
         <!-- ─ 2.7 AI 정책 정렬 -->
         <div class="sub-h">
-          <div class="sub-h-num mono">§ 2.7</div>
+          <div class="sub-h-num mono">2.7</div>
           <div class="sub-h-title">AI 정책 정렬 · K-AI 2026</div>
         </div>
 
         <p class="sec-intro">
-          정부의 "AI 3대 강국" 비전(K-AI 2026 행동계획)이 본격화되며 <strong>AI 전환 우수 기업이 정책 우호 등급에서 우선 분류</strong>되는 흐름. KB금융이 2026년 조직개편에서 미래전략부문(전략+AI+데이터+디지털혁신 통합)을 신설한 것이 대표 사례. 케뱅은 § 1.2.9 AI 자산을 정부 정책에 정렬시킬 수 있는 자연스러운 위치에 있으나 가시화 부족.
+          정부의 "AI 3대 강국" 비전(K-AI 2026 행동계획)이 본격화되며 <strong>AI 전환 우수 기업이 정책 우호 등급에서 우선 분류</strong>되는 흐름. KB금융이 2026년 조직개편에서 미래전략부문(전략+AI+데이터+디지털혁신 통합)을 신설한 것이 대표 사례. 케뱅은 1.2.9 AI 자산을 정부 정책에 정렬시킬 수 있는 자연스러운 위치에 있으나 가시화 부족.
         </p>
 
         <table class="factor-table">
@@ -3753,17 +4767,17 @@
 
         <div class="takeaway">
           <div class="takeaway-label mono">Takeaway</div>
-          정부 AI 정책 흐름은 케뱅에 유리한 환경이나, <strong>"가장 자연스러운 정책 동조 대상"으로 자동 분류되지는 않음</strong>. K2(PoC)·K4(중·저신용 33.7%)·K5(KT 보이스피싱) 같은 <strong>실제 사실 기반 시그널을 IR·공시에 구체화하는 것이 우선</strong>. 정책 수혜 기대보다 실제 사례·정량 지표 축적이 외인이 보는 평가 기준.
+          정부 AI 정책은 유리한 환경이나 자동 분류 대상은 아님. <strong>K2(PoC)·K4(중·저신용 33.7%)·K5(KT 보이스피싱) 같은 사실 기반 시그널의 IR 공시</strong>가 우선. 정책 수혜 기대보다 실제 데이터 축적.
         </div>
 
         <!-- ─ 2.9 오버행·수급 -->
         <div class="sub-h">
-          <div class="sub-h-num mono">§ 2.9</div>
+          <div class="sub-h-num mono">2.9</div>
           <div class="sub-h-title">오버행 · 수급 관리</div>
         </div>
 
         <p class="sec-intro">
-          § 2.3 P1(오버행 임박)의 시급성 때문에 별도 영역으로 분리. <strong>6월·9월 임박한 보호예수 해제 1.19억주(발행주식 29.3%)</strong>가 주가 회복 시도마다 매도 압력으로 작용. 모든 다른 전략의 효과를 무력화할 수 있는 가장 시급한 단일 이슈.
+          2.3 P1(오버행 임박)의 시급성 때문에 별도 영역으로 분리. <strong>6월·9월 임박한 보호예수 해제 1.19억주(발행주식 29.3%)</strong>가 주가 회복 시도마다 매도 압력으로 작용. 모든 다른 전략의 효과를 무력화할 수 있는 가장 시급한 단일 이슈.
         </p>
 
         <table class="factor-table">
@@ -3804,24 +4818,34 @@
               <td class="factor-rank"><span class="rank-id">O5</span><span class="status gap">●○○ Gap</span></td>
               <td class="factor-name">자사주 매입 수급 흡수</td>
               <td class="factor-data">V2와 연계</td>
-              <td class="factor-desc">§ 2.6 V2의 자사주 매입을 오버행 시점에 맞춰 실행하면 수급 흡수와 밸류업 시그널 동시 달성. BIS 24.46% 자본 여력으로 충분히 가능. 거버넌스 합의가 관건.</td>
+              <td class="factor-desc">2.6 V2의 자사주 매입을 오버행 시점에 맞춰 실행하면 수급 흡수와 밸류업 시그널 동시 달성. BIS 24.46% 자본 여력으로 충분히 가능. 거버넌스 합의가 관건.</td>
             </tr>
           </tbody>
         </table>
 
         <div class="takeaway">
           <div class="takeaway-label mono">Takeaway</div>
-          오버행은 <strong>"발생 후 대응"이 아닌 "발생 전 협상"</strong>의 영역. 6월 1차 해제까지 남은 시간이 본 보고서의 가장 큰 변수. O3(자발적 락업 연장) + O4(블록딜 매칭) + O5(자사주 매입)의 3축을 6월 내 동시 실행해야 9월 충격 회피 가능. <strong>이 결정이 본 보고서의 다른 모든 전략(§ 1.x, § 3.x)의 효과를 결정짓는 전제 조건</strong>.
+          오버행은 <strong>"발생 후 대응"이 아닌 "발생 전 협상"</strong>. 6월 1차 해제 전 <strong>O3 락업 연장 + O4 블록딜 + O5 자사주 매입</strong> 3축 동시 실행 필수. 본 보고서 모든 전략의 전제 조건.
         </div>
 
-        <!-- § 2.10 매트릭스 -->
+          </div>
+        </details>
+
+        <details class="diag">
+          <summary>
+            <span><span class="diag-tag mono">상세 자료</span>2.10 매트릭스 + 2.11 3사 비교</span>
+            <span class="diag-count mono">매트릭스 · 히트맵 · 격차 카드</span>
+          </summary>
+          <div class="diag-content" style="padding: 8px 4px;">
+
+        <!-- 2.10 매트릭스 -->
         <div class="sub-h">
-          <div class="sub-h-num mono">§ 2.10</div>
+          <div class="sub-h-num mono">2.10</div>
           <div class="sub-h-title">정부 디스카운트 × 3관점 매트릭스</div>
         </div>
 
         <p class="sec-intro">
-          § 2.1-2.9의 7개 디스카운트 영역이 누구에게 어떻게 보이는가. <strong>한 항목을 가로로 읽으면 → 외국인이 매도하는 이유 → 정부·정책이 보는 의미 → 시장 수급에 미치는 영향</strong>이 차례로 나옴. 같은 문제도 누구의 시각이냐에 따라 해석과 우선순위가 달라짐.
+          2.1-2.9의 7개 디스카운트 영역이 누구에게 어떻게 보이는가. <strong>한 항목을 가로로 읽으면 → 외국인이 매도하는 이유 → 정부·정책이 보는 의미 → 시장 수급에 미치는 영향</strong>이 차례로 나옴. 같은 문제도 누구의 시각이냐에 따라 해석과 우선순위가 달라짐.
         </p>
 
         <div class="matrix-flow">
@@ -3858,13 +4882,13 @@
           <tbody>
             <tr>
               <th>
-                <span class="ph-tag mono">§ 2.1</span>
+                <span class="ph-tag mono">2.1</span>
                 <span class="ph-name">외인 매도</span>
               </th>
               <td>
                 <span class="m-title">"이미 매도된 종목"</span>
                 <span class="m-body">상장 설계 결함(F1-F2)에 따른 불신과 글로벌 카테고리 미진입(F3-F4)의 결과.</span>
-                <span class="m-data mono">−23% / 한자릿</span>
+                <span class="m-data mono">−32.7% / 0.04%</span>
               </td>
               <td>
                 <span class="m-title">코리아 디스카운트 사례</span>
@@ -3879,7 +4903,7 @@
             </tr>
             <tr>
               <th>
-                <span class="ph-tag mono">§ 2.2</span>
+                <span class="ph-tag mono">2.2</span>
                 <span class="ph-name">국연 비매수</span>
               </th>
               <td>
@@ -3900,7 +4924,7 @@
             </tr>
             <tr>
               <th>
-                <span class="ph-tag mono">§ 2.4</span>
+                <span class="ph-tag mono">2.4</span>
                 <span class="ph-name">정책·규제</span>
               </th>
               <td>
@@ -3921,7 +4945,7 @@
             </tr>
             <tr>
               <th>
-                <span class="ph-tag mono">§ 2.5</span>
+                <span class="ph-tag mono">2.5</span>
                 <span class="ph-name">지배구조</span>
               </th>
               <td>
@@ -3936,13 +4960,13 @@
               </td>
               <td>
                 <span class="m-title">자본정책 병목</span>
-                <span class="m-body">자사주·배당 결정 지연이 직접적 주가 변수. § 2.6·2.9 실행의 전제.</span>
+                <span class="m-body">자사주·배당 결정 지연이 직접적 주가 변수. 2.6·2.9 실행의 전제.</span>
                 <span class="m-data mono">실행 속도 변수</span>
               </td>
             </tr>
             <tr>
               <th>
-                <span class="ph-tag mono">§ 2.6</span>
+                <span class="ph-tag mono">2.6</span>
                 <span class="ph-name">주주환원</span>
               </th>
               <td>
@@ -3957,13 +4981,13 @@
               </td>
               <td>
                 <span class="m-title">멀티플 리레이팅 직접 트리거</span>
-                <span class="m-body">자사주 매입 발표만으로 PBR 1.0× → 1.4× 진입 가능.</span>
-                <span class="m-data mono">+41% upside</span>
+                <span class="m-body">자사주 매입 발표만으로 PBR 0.97× → 1.4× 진입 가능.</span>
+                <span class="m-data mono">+45% upside</span>
               </td>
             </tr>
             <tr>
               <th>
-                <span class="ph-tag mono">§ 2.7</span>
+                <span class="ph-tag mono">2.7</span>
                 <span class="ph-name">AI 정책 정렬</span>
               </th>
               <td>
@@ -3984,7 +5008,7 @@
             </tr>
             <tr>
               <th>
-                <span class="ph-tag mono">§ 2.9</span>
+                <span class="ph-tag mono">2.9</span>
                 <span class="ph-name">오버행</span>
               </th>
               <td>
@@ -4008,24 +5032,24 @@
 
         <div class="takeaway">
           <div class="takeaway-label mono">Reading the Matrix</div>
-          정부 디스카운트는 외인·정부·시장의 <strong>3관점이 동일 영역을 다르게 해석</strong>하는 구조. § 2.7 AI 정책 정렬은 외인에는 "미공시"로, 정부에는 "최우선 협력 대상"으로, 시장에는 "규제 디스카운트 해소"로 변환. <strong>가장 적은 비용으로 3관점 모두 우호로 전환할 수 있는 단일 영역</strong>. § 2.6 주주환원과 § 2.9 오버행은 6월 내 의사결정이 모든 다른 전략의 전제. § 2.7 AI 정책 정렬은 차별화의 핵심 카드.
+          정부 디스카운트는 <strong>외인·정부·시장이 같은 영역을 다르게 해석</strong>하는 구조. 2.6 주주환원·2.9 오버행이 6월 내 의사결정 전제. 2.7 AI 정책 정렬은 가장 적은 비용으로 3관점 모두 우호 전환 가능.
         </div>
 
-        <!-- § 2.11 3사 비교 -->
+        <!-- 2.11 3사 비교 -->
         <div class="sub-h">
-          <div class="sub-h-num mono">§ 2.11</div>
+          <div class="sub-h-num mono">2.11</div>
           <div class="sub-h-title">3사 비교 · 정책·거버넌스·주주환원</div>
         </div>
 
         <p class="sec-intro">
-          § 2.4-2.9 정부 디스카운트 7개 영역에서 케뱅의 위치를 카뱅·토스 대비 비교. <strong>토스뱅크는 비상장으로 자본정책·지수 편입 영역은 평가 불가</strong>(n/a). 외인·국연 매도 데이터도 케뱅 한정 진단이라 비교에서 제외.
+          2.4-2.9 정부 디스카운트 7개 영역에서 케뱅의 위치를 카뱅·토스 대비 비교. <strong>토스뱅크는 비상장으로 자본정책·지수 편입 영역은 평가 불가</strong>(n/a). 외인·국연 매도 데이터도 케뱅 한정 진단이라 비교에서 제외.
         </p>
 
         <div class="compare-intro">
           <div class="compare-intro-cell focus">
             <div class="compare-intro-name mono">Subject</div>
             <div class="compare-intro-title">케이뱅크</div>
-            <div class="compare-intro-sub">PBR 1.0× · 외인 한자릿 · 시총 2.68조</div>
+            <div class="compare-intro-sub">PBR 0.97× · 외인 0.04% · 시총 2.27조</div>
           </div>
           <div class="compare-intro-cell">
             <div class="compare-intro-name mono">Peer A</div>
@@ -4050,7 +5074,7 @@
           </thead>
           <tbody>
             <tr>
-              <th><span class="h-tag mono">§ 2.4</span>정책·규제 대응</th>
+              <th><span class="h-tag mono">2.4</span>정책·규제 대응</th>
               <td class="focus-col">
                 <div class="cell-status">
                   <span class="status partial">●●○ Partial</span>
@@ -4071,7 +5095,7 @@
               </td>
             </tr>
             <tr>
-              <th><span class="h-tag mono">§ 2.5</span>지배구조</th>
+              <th><span class="h-tag mono">2.5</span>지배구조</th>
               <td class="focus-col">
                 <div class="cell-status">
                   <span class="status gap">●○○ Gap</span>
@@ -4092,7 +5116,7 @@
               </td>
             </tr>
             <tr>
-              <th><span class="h-tag mono">§ 2.6</span>주주환원</th>
+              <th><span class="h-tag mono">2.6</span>주주환원</th>
               <td class="focus-col">
                 <div class="cell-status">
                   <span class="status gap">●○○ Gap</span>
@@ -4108,7 +5132,7 @@
               <td class="na">— n/a (비상장)</td>
             </tr>
             <tr>
-              <th><span class="h-tag mono">§ 2.6 V3</span>Value-up</th>
+              <th><span class="h-tag mono">2.6 V3</span>Value-up</th>
               <td class="focus-col">
                 <div class="cell-status">
                   <span class="status gap">●○○ Gap</span>
@@ -4124,7 +5148,7 @@
               <td class="na">— n/a (비상장)</td>
             </tr>
             <tr>
-              <th><span class="h-tag mono">§ 2.7</span>AI 정책 정렬</th>
+              <th><span class="h-tag mono">2.7</span>AI 정책 정렬</th>
               <td class="focus-col">
                 <div class="cell-status">
                   <span class="status partial">●●○ Partial</span>
@@ -4145,7 +5169,7 @@
               </td>
             </tr>
             <tr>
-              <th><span class="h-tag mono">§ 2.9</span>오버행 관리</th>
+              <th><span class="h-tag mono">2.9</span>오버행 관리</th>
               <td class="focus-col">
                 <div class="cell-status">
                   <span class="status gap">●○○ Gap</span>
@@ -4165,7 +5189,7 @@
               <td class="focus-col">
                 <div class="cell-status">
                   <span class="status gap">●○○ Gap</span>
-                  <span class="cell-note">한자릿</span>
+                  <span class="cell-note">0.04%</span>
                 </div>
               </td>
               <td>
@@ -4187,18 +5211,18 @@
 
         <div class="takeaway">
           <div class="takeaway-label mono">Heatmap Reading</div>
-          정부 디스카운트 영역에서 케뱅은 <strong>7개 중 5개 영역이 ●○○ Gap</strong>으로 카뱅 대비 압도적 후행. 다만 격차의 원인이 펀더멘털이 아닌 <strong>"실행 의지·거버넌스 합의 부재"</strong>임을 인지해야 함. <strong>§ 2.6 주주환원과 § 2.9 오버행은 6월 내 결정만 하면 즉시 ●●○로 진입 가능</strong>. § 2.5 지배구조는 구조적 약점이나 토스는 ●●● Done — 창업자 장기 리더십이 가능한 거버넌스 모델임을 시사.
+          케뱅 <strong>7개 중 5개 영역이 Gap</strong>으로 카뱅 대비 후행. 격차 원인은 펀더멘털이 아닌 <strong>실행 의지·거버넌스 합의 부재</strong>. 2.6·2.9는 6월 결정만으로 즉시 Partial 진입 가능.
         </div>
 
         <!-- 격차 핵심 영역 카드 -->
         <div class="sub-h" style="margin-top: 32px;">
-          <div class="sub-h-num mono">§ 2.11.1</div>
+          <div class="sub-h-num mono">2.11.1</div>
           <div class="sub-h-title">격차가 큰 핵심 영역 상세 비교</div>
         </div>
 
         <div class="compare-card">
           <div class="compare-card-head">
-            <span class="compare-card-num mono">§ 2.6</span>
+            <span class="compare-card-num mono">2.6</span>
             <span class="compare-card-title">주주환원 · 즉시 시그널 가능 영역</span>
           </div>
           <div class="compare-card-body">
@@ -4222,7 +5246,7 @@
 
         <div class="compare-card">
           <div class="compare-card-head">
-            <span class="compare-card-num mono">§ 2.5</span>
+            <span class="compare-card-num mono">2.5</span>
             <span class="compare-card-title">지배구조 · 구조적 약점</span>
           </div>
           <div class="compare-card-body">
@@ -4246,7 +5270,7 @@
 
         <div class="compare-card">
           <div class="compare-card-head">
-            <span class="compare-card-num mono">§ 2.7</span>
+            <span class="compare-card-num mono">2.7</span>
             <span class="compare-card-title">AI 정책 정렬 · 동률에서 우위로 전환 가능 영역</span>
           </div>
           <div class="compare-card-body">
@@ -4269,11 +5293,14 @@
         </div>
 
         <div class="takeaway">
-          <div class="takeaway-label mono">§ 2.11 Takeaway</div>
-          정부 디스카운트는 3사 중 케뱅이 가장 후행하나, <strong>"실행만 하면 즉시 따라잡을 수 있는 영역들"</strong>로 구성. § 2.6 주주환원 · § 2.9 오버행 협상은 6월 결정만 하면 ●●○ 진입. § 2.7 AI 정책 정렬은 3사 모두 ●●○에 머무는 동률 영역인데, <strong>케뱅의 AI 자산이 가장 깊다는 점에서 즉시 ●●● 진입 가능한 유일 후보</strong>. 정부·정책 채널은 케뱅이 카뱅·토스를 추월할 수 있는 가장 빠른 영역.
+          <div class="takeaway-label mono">2.11 Takeaway</div>
+          정부 디스카운트는 3사 중 케뱅이 가장 후행하나 <strong>실행만 하면 즉시 따라잡을 수 있는 영역들</strong>. 2.6·2.9는 6월 결정으로 Partial 진입. 2.7 AI 정책 정렬은 케뱅이 추월 가능한 유일 영역.
         </div>
 
-        <!-- 향후 아이데이션은 § 2.12, § 2.13 ... 로 누적 -->
+          </div>
+        </details>
+
+        <!-- 향후 아이데이션은 2.12, 2.13 ... 로 누적 -->
 
       </section>
     </div>
@@ -4285,17 +5312,28 @@
 
       <section>
         <div class="sec-h">
-          <div class="sec-h-num mono">§ 06</div>
+          <div class="sec-h-num mono">06</div>
           <div class="sec-h-title">글로벌 재평가</div>
           <div class="sec-h-sub">Global · Multiple Rerating</div>
         </div>
-        <p class="sec-intro">
-          카뱅 외인 16.7% 대비 한 자릿수. 글로벌 인터넷은행 멀티플 대비 70% 디스카운트. 외인 매수가 가장 빠른 주가 부양 경로.
-        </p>
 
-        <!-- § 3.1 -->
+        <div class="tldr">
+          <div class="tldr-label mono">TL;DR</div>
+          <div class="tldr-content">
+            <strong>케뱅 PBR 0.97× (청산가치 미만) vs Nubank 6× / Revolut 7×</strong> — 같은 펀더멘털도 어떤 카테고리에 묶이느냐에 따라 멀티플 4-6배 차이. 케뱅은 "한국 중소은행" 카테고리에 묶여 디지털 프리미엄 0%. <strong>해법은 트랙 A Big Bet 02·03</strong>: 영문 IR + 정량 KPI 공시 + 해외 사업 비전이 카테고리 전환의 본질 동력.
+          </div>
+        </div>
+
+        <details class="diag">
+          <summary>
+            <span><span class="diag-tag mono">진단 상세</span>글로벌 IR · 카테고리 · 동남아 · 지수 · AI 진단</span>
+            <span class="diag-count mono">3.1 - 3.6 · 6개 영역 · 약 30개 진단</span>
+          </summary>
+          <div class="diag-content" style="padding: 8px 4px;">
+
+        <!-- 3.1 -->
         <div class="sub-h">
-          <div class="sub-h-num mono">§ 3.1</div>
+          <div class="sub-h-num mono">3.1</div>
           <div class="sub-h-title">문제 분석 · 해소 방안</div>
         </div>
 
@@ -4367,12 +5405,12 @@
 
         <!-- ─ 3.2 글로벌 IR · 커뮤니케이션 -->
         <div class="sub-h">
-          <div class="sub-h-num mono">§ 3.2</div>
+          <div class="sub-h-num mono">3.2</div>
           <div class="sub-h-title">글로벌 IR · 커뮤니케이션</div>
         </div>
 
         <p class="sec-intro">
-          외인이 케뱅에 진입하지 않는 이유 중 가장 직접적인 것은 <strong>"정보 접근성"</strong>. § 2.1 F3(글로벌 카테고리 미진입)의 실체는 결국 IR 커뮤니케이션의 부재. 글로벌 자본이 보는 시점에서 케뱅은 "존재하지만 보이지 않는" 종목.
+          외인이 케뱅에 진입하지 않는 이유 중 가장 직접적인 것은 <strong>"정보 접근성"</strong>. 2.1 F3(글로벌 카테고리 미진입)의 실체는 결국 IR 커뮤니케이션의 부재. 글로벌 자본이 보는 시점에서 케뱅은 "존재하지만 보이지 않는" 종목.
         </p>
 
         <table class="factor-table">
@@ -4413,24 +5451,24 @@
               <td class="factor-rank"><span class="rank-id">I5</span><span class="status gap">●○○ Gap</span></td>
               <td class="factor-name">지속가능경영보고서</td>
               <td class="factor-data">ESG 평가 직접 영향</td>
-              <td class="factor-desc">TCFD·SASB 표준 기반 영문 ESG 보고서 품질이 글로벌 패시브 자금(MSCI ESG·FTSE4Good) 평가에 직접 반영. § 2.6 V4와 직접 연결.</td>
+              <td class="factor-desc">TCFD·SASB 표준 기반 영문 ESG 보고서 품질이 글로벌 패시브 자금(MSCI ESG·FTSE4Good) 평가에 직접 반영. 2.6 V4와 직접 연결.</td>
             </tr>
           </tbody>
         </table>
 
         <div class="takeaway">
           <div class="takeaway-label mono">Takeaway</div>
-          외인 부재의 절반은 펀더멘털이 아닌 <strong>"보이지 않음"</strong>의 문제. I1-I3 (영문 자료 + 컨콜 + 로드쇼)는 비용 대비 효과가 가장 큰 즉시 실행 가능 영역. 특히 <strong>I3 해외 로드쇼는 분기 실적·자본정책·AI 자산 등 케뱅의 사실 기반 시그널을 글로벌 자본에 전달하는 직접 채널</strong>이며, § 2.6 V3 Value-up 편입 검토와 함께 진행 시 외인 인식 전환의 출발점.
+          외인 부재의 절반은 펀더멘털이 아닌 <strong>"보이지 않음"</strong>의 문제. I1-I3(영문 자료·컨콜·로드쇼)는 비용 대비 효과 최고. 2.6 V3 Value-up과 결합 시 외인 인식 전환의 출발점.
         </div>
 
         <!-- ─ 3.3 카테고리 포지셔닝 · 내러티브 -->
         <div class="sub-h">
-          <div class="sub-h-num mono">§ 3.3</div>
+          <div class="sub-h-num mono">3.3</div>
           <div class="sub-h-title">카테고리 포지셔닝 · 글로벌 내러티브</div>
         </div>
 
         <p class="sec-intro">
-          외인이 케뱅을 "어떤 카테고리"로 분류하는지가 멀티플을 결정. 현재 케뱅은 <strong>"한국 중소형 은행"</strong>으로 분류되어 PBR 1.0× 카테고리에 묶임. Nubank·Revolut가 속한 <strong>"디지털뱅킹·핀테크"</strong> 카테고리에 진입해야 PBR 4-6× 멀티플 진입 가능.
+          외인이 케뱅을 "어떤 카테고리"로 분류하는지가 멀티플을 결정. 현재 케뱅은 <strong>"한국 중소형 은행"</strong>으로 분류되어 PBR 0.97× 카테고리(청산가치 미만)에 묶임. Nubank·Revolut가 속한 <strong>"디지털뱅킹·핀테크"</strong> 카테고리에 진입해야 PBR 4-6× 멀티플 진입 가능.
         </p>
 
         <table class="factor-table">
@@ -4471,19 +5509,19 @@
               <td class="factor-rank"><span class="rank-id">N5</span><span class="status gap">●○○ Gap</span></td>
               <td class="factor-name">AI·핀테크 멀티플 미진입</td>
               <td class="factor-data">AI premium 0×</td>
-              <td class="factor-desc">글로벌 AI·핀테크 종목군(Adyen·Block·SoFi)이 받는 AI 멀티플 프리미엄 미반영. AI 자산관리·신용평가 가시화 시 진입 가능. § 1.2.8 데이터·개인화와 직접 연결.</td>
+              <td class="factor-desc">글로벌 AI·핀테크 종목군(Adyen·Block·SoFi)이 받는 AI 멀티플 프리미엄 미반영. AI 자산관리·신용평가 가시화 시 진입 가능. 1.2.8 데이터·개인화와 직접 연결.</td>
             </tr>
           </tbody>
         </table>
 
         <div class="takeaway">
           <div class="takeaway-label mono">Takeaway</div>
-          멀티플 4× 차이의 본질은 펀더멘털이 아닌 <strong>"분류 카테고리"</strong>의 차이. 같은 ROE·NIM이어도 "한국 은행"으로 분류되면 PBR 0.5×, "디지털뱅킹"으로 분류되면 PBR 4-6×. 다만 카테고리 분류는 자가 정의가 아닌 <strong>정량 지표(ARPU·교차판매·해외 익스포저·AI 처리량 등) 공시와 글로벌 IR 채널의 누적 결과</strong>로 결정. § 3.2 IR 채널을 통한 정량 지표 반복 노출이 본질적 경로.
+          멀티플 4× 차이는 펀더멘털이 아닌 <strong>"분류 카테고리"</strong>의 차이. 카테고리 전환은 자가 정의가 아닌 <strong>정량 지표(ARPU·해외 익스포저·AI 처리량) 공시 + IR 채널 누적</strong>의 결과.
         </div>
 
         <!-- ─ 3.4 동남아·해외 진출 -->
         <div class="sub-h">
-          <div class="sub-h-num mono">§ 3.4</div>
+          <div class="sub-h-num mono">3.4</div>
           <div class="sub-h-title">동남아 · 해외 진출 시그널링</div>
         </div>
 
@@ -4517,7 +5555,7 @@
               <td class="factor-rank"><span class="rank-id">A3</span><span class="status gap">●○○ Gap</span></td>
               <td class="factor-name">국내 외국인 시장 미점유</td>
               <td class="factor-data">외국인 거주자</td>
-              <td class="factor-desc">국내 거주 외국인은 시중은행·핀테크가 이미 점유 중인 영역. § 1.2.4 U7(다국어 부재) 해소가 필요조건이나, 단독으로 해외 진출의 사전 시뮬레이션이라 보기엔 약함.</td>
+              <td class="factor-desc">국내 거주 외국인은 시중은행·핀테크가 이미 점유 중인 영역. 1.2.4 U7(다국어 부재) 해소가 필요조건이나, 단독으로 해외 진출의 사전 시뮬레이션이라 보기엔 약함.</td>
             </tr>
             <tr>
               <td class="factor-rank"><span class="rank-id">A4</span><span class="status gap">●○○ Gap</span></td>
@@ -4529,24 +5567,24 @@
               <td class="factor-rank"><span class="rank-id">A5</span><span class="status gap">●○○ Gap</span></td>
               <td class="factor-name">M&A · 지분 투자 옵션</td>
               <td class="factor-data">검토 단계</td>
-              <td class="factor-desc">동남아 디지털뱅킹 지분 투자·M&A는 라이센스 신규 취득 대비 빠른 경로. 단 후보 식별·실사·자본 배분 의사결정은 거버넌스(§ 2.5) 합의가 전제. 단기 단독 트리거로 보기 어려움.</td>
+              <td class="factor-desc">동남아 디지털뱅킹 지분 투자·M&A는 라이센스 신규 취득 대비 빠른 경로. 단 후보 식별·실사·자본 배분 의사결정은 거버넌스(2.5) 합의가 전제. 단기 단독 트리거로 보기 어려움.</td>
             </tr>
           </tbody>
         </table>
 
         <div class="takeaway">
           <div class="takeaway-label mono">Takeaway</div>
-          해외 진출은 멀티플 리레이팅 잠재 카드이나, <strong>"발표 자체가 트리거"라는 단순화는 과장</strong>. 카뱅 슈퍼뱅크 사례도 실제 지분 투자·운영 실체가 동반된 결과. 케뱅은 우선 <strong>중기 해외 사업 비전 공시 + 구체 옵션(M&A·지분 투자·라이센스) 검토</strong>가 선행 필요. 거버넌스 합의 없이는 의미 있는 시그널 어려움.
+          해외 진출은 잠재 카드이나 <strong>"발표 자체가 트리거"는 과장</strong>. 카뱅 슈퍼뱅크도 실제 지분 투자 결과. <strong>중기 비전 공시 + M&A·지분 투자·라이센스 검토</strong>가 선행 필요.
         </div>
 
         <!-- ─ 3.5 지수 편입 · 패시브 자금 -->
         <div class="sub-h">
-          <div class="sub-h-num mono">§ 3.5</div>
+          <div class="sub-h-num mono">3.5</div>
           <div class="sub-h-title">지수 편입 · 패시브 자금 트리거</div>
         </div>
 
         <p class="sec-intro">
-          외인 자금의 60%+는 액티브가 아닌 패시브 자금(ETF·인덱스 펀드). 즉 <strong>지수 편입 자체가 자동 매수 트리거</strong>. § 2.2 N1(국연 인덱스 편입 미달)과 동일한 메커니즘이 글로벌에서도 작동. MSCI·FTSE·Korea Value-up 3개 지수가 핵심.
+          외인 자금의 60%+는 액티브가 아닌 패시브 자금(ETF·인덱스 펀드). 즉 <strong>지수 편입 자체가 자동 매수 트리거</strong>. 2.2 N1(국연 인덱스 편입 미달)과 동일한 메커니즘이 글로벌에서도 작동. MSCI·FTSE·Korea Value-up 3개 지수가 핵심.
         </p>
 
         <table class="factor-table">
@@ -4563,7 +5601,7 @@
               <td class="factor-rank"><span class="rank-id">X1</span><span class="status gap">●○○ Gap</span></td>
               <td class="factor-name">MSCI Korea 편입 미달</td>
               <td class="factor-data">시총·유동성 기준</td>
-              <td class="factor-desc">MSCI Korea 편입은 시총 + 유동성(FIF·외인 비중) + 거래량 기준 충족 필요. 현재 시총 3.36조 + 외인 비중 한자릿 + 유동주식 부족으로 미달. 패시브 자금 진입의 가장 큰 장벽.</td>
+              <td class="factor-desc">MSCI Korea 편입은 시총 + 유동성(FIF·외인 비중) + 거래량 기준 충족 필요. 현재 시총 2.27조 + 외인 소진율 0.04% + 유동주식 부족으로 미달. 패시브 자금 진입의 가장 큰 장벽.</td>
             </tr>
             <tr>
               <td class="factor-rank"><span class="rank-id">X2</span><span class="status gap">●○○ Gap</span></td>
@@ -4575,36 +5613,36 @@
               <td class="factor-rank"><span class="rank-id">X3</span><span class="status gap">●○○ Gap</span></td>
               <td class="factor-name">Korea Value-up 미신청</td>
               <td class="factor-data">정부 정책 지수</td>
-              <td class="factor-desc">§ 2.6 V3와 직접 연결. 정부 코리아 디스카운트 해소 정책 지수로 패시브 자금 + 정부 정책 시그널 동시 작동. 신청·편입 자체가 가장 빠른 트리거. 비용·리스크 없음.</td>
+              <td class="factor-desc">2.6 V3와 직접 연결. 정부 코리아 디스카운트 해소 정책 지수로 패시브 자금 + 정부 정책 시그널 동시 작동. 신청·편입 자체가 가장 빠른 트리거. 비용·리스크 없음.</td>
             </tr>
             <tr>
               <td class="factor-rank"><span class="rank-id">X4</span><span class="status gap">●○○ Gap</span></td>
               <td class="factor-name">KOSPI 200 편입 후보</td>
               <td class="factor-data">국연 인덱스 추종</td>
-              <td class="factor-desc">국민연금 + 국내 패시브 자금의 가장 큰 풀. § 2.2 N1의 직접 해결책. 시총·유동성 충족 시점이 핵심. 케뱅은 시총 기준 후순위 후보.</td>
+              <td class="factor-desc">국민연금 + 국내 패시브 자금의 가장 큰 풀. 2.2 N1의 직접 해결책. 시총·유동성 충족 시점이 핵심. 케뱅은 시총 기준 후순위 후보.</td>
             </tr>
             <tr>
               <td class="factor-rank"><span class="rank-id">X5</span><span class="status gap">●○○ Gap</span></td>
               <td class="factor-name">디지털·핀테크 테마 ETF</td>
               <td class="factor-data">글로벌 ARK·Roundhill</td>
-              <td class="factor-desc">ARK Fintech ETF, Roundhill Big Tech ETF 등 글로벌 테마 ETF 편입 가능성. § 3.3 N5 AI·핀테크 카테고리 진입과 직접 연결. 시총 무관 테마 기반 편입.</td>
+              <td class="factor-desc">ARK Fintech ETF, Roundhill Big Tech ETF 등 글로벌 테마 ETF 편입 가능성. 3.3 N5 AI·핀테크 카테고리 진입과 직접 연결. 시총 무관 테마 기반 편입.</td>
             </tr>
           </tbody>
         </table>
 
         <div class="takeaway">
           <div class="takeaway-label mono">Takeaway</div>
-          지수 편입의 핵심은 <strong>"시총·유동성"이라는 정량 기준 + "테마·정책"이라는 정성 기준</strong>의 동시 충족. <strong>X3 Korea Value-up 편입</strong>은 비용·리스크 없는 가장 빠른 트리거이자 § 2.6 V3와 직접 연결. <strong>X5 테마 ETF</strong>는 § 3.3 카테고리 포지셔닝의 자연스러운 결과. <strong>X1 MSCI 편입</strong>은 § 2.9 오버행 해소 + 자사주 매입(§ 2.6 V2)을 통한 유동성 확보가 전제 조건.
+          지수 편입은 <strong>시총·유동성(정량) + 테마·정책(정성)</strong> 동시 충족 필요. <strong>X3 Value-up</strong>이 가장 빠른 트리거. X1 MSCI는 2.9 오버행 해소·자사주 매입이 전제.
         </div>
 
         <!-- ─ 3.6 AI Powered Bank 글로벌 내러티브 -->
         <div class="sub-h">
-          <div class="sub-h-num mono">§ 3.6</div>
+          <div class="sub-h-num mono">3.6</div>
           <div class="sub-h-title">AI Powered Bank · 글로벌 내러티브</div>
         </div>
 
         <p class="sec-intro">
-          글로벌 자본이 2024년 이후 가장 강하게 베팅하는 카테고리는 <strong>"AI Native Bank"</strong>. Nubank의 AI 신용평가, Revolut의 AI 자산관리, Block의 AI 결제가 멀티플의 핵심 프리미엄 원천. 케뱅의 § 1.2.9 AI 자산은 글로벌 자본 시각에서 가장 강력한 차별화 요인이나, § 3.2 IR 자료에 영문 가시화 부족.
+          글로벌 자본이 2024년 이후 가장 강하게 베팅하는 카테고리는 <strong>"AI Native Bank"</strong>. Nubank의 AI 신용평가, Revolut의 AI 자산관리, Block의 AI 결제가 멀티플의 핵심 프리미엄 원천. 케뱅의 1.2.9 AI 자산은 글로벌 자본 시각에서 가장 강력한 차별화 요인이나, 3.2 IR 자료에 영문 가시화 부족.
         </p>
 
         <table class="factor-table">
@@ -4621,7 +5659,7 @@
               <td class="factor-rank"><span class="rank-id">G1</span><span class="status gap">●○○ Gap</span></td>
               <td class="factor-name">AI Native Bank 카테고리</td>
               <td class="factor-data">Nubank · Revolut</td>
-              <td class="factor-desc">글로벌 자본이 2024년 이후 AI 활용도가 높은 디지털뱅킹에 AI premium 부여 중. 케뱅은 § 1.2.9 AI1(인뱅 최초 LLM) + AI2(금융권 최초 보이스피싱) 자산으로 이 카테고리에 자연 진입 가능.</td>
+              <td class="factor-desc">글로벌 자본이 2024년 이후 AI 활용도가 높은 디지털뱅킹에 AI premium 부여 중. 케뱅은 1.2.9 AI1(인뱅 최초 LLM) + AI2(금융권 최초 보이스피싱) 자산으로 이 카테고리에 자연 진입 가능.</td>
             </tr>
             <tr>
               <td class="factor-rank"><span class="rank-id">G2</span><span class="status partial">●●○ Partial</span></td>
@@ -4652,17 +5690,27 @@
 
         <div class="takeaway">
           <div class="takeaway-label mono">Takeaway</div>
-          AI는 케뱅이 인터넷전문은행 카테고리 내에서 <strong>차별화된 자산을 축적한 영역</strong>이나, 카뱅 신용평가 AI·토스 AI 자산도 동등 또는 그 이상의 매출 기여를 함. "유일한 우위"라는 단순화는 위험. <strong>차별화 시그널을 외부에 보여주는 것이 본질</strong>이며, 이를 위해 ① 정량 지표 공시(G2), ② 글로벌 IR 채널 강화(G3), ③ 디지털자산 PoC 성과 추적(G4)의 단계적 접근이 합리적. 슬로건이 아닌 데이터·실체 중심.
+          AI는 케뱅이 차별화 자산을 축적한 영역이나 카뱅 신용평가 AI도 동등 매출 기여. <strong>"유일한 우위"보다 "데이터 가시화"가 본질</strong>. ① 정량 KPI 공시 → ② 글로벌 IR → ③ PoC 성과 추적의 단계적 접근.
         </div>
 
-        <!-- § 3.7 매트릭스 -->
+          </div>
+        </details>
+
+        <details class="diag">
+          <summary>
+            <span><span class="diag-tag mono">상세 자료</span>3.7 매트릭스 + 3.8 3사 비교</span>
+            <span class="diag-count mono">매트릭스 · 히트맵 · 격차 카드</span>
+          </summary>
+          <div class="diag-content" style="padding: 8px 4px;">
+
+        <!-- 3.7 매트릭스 -->
         <div class="sub-h">
-          <div class="sub-h-num mono">§ 3.7</div>
+          <div class="sub-h-num mono">3.7</div>
           <div class="sub-h-title">글로벌 재평가 × 3관점 매트릭스</div>
         </div>
 
         <p class="sec-intro">
-          § 3.1-3.6의 6개 글로벌 재평가 영역이 누구에게 어떻게 보이는가. <strong>한 항목을 가로로 읽으면 → 해외 투자자가 매기는 가치 → 국내 투자자가 매기는 가치 → 글로벌 비교군이 평가하는 가치</strong>가 차례로 나옴. 같은 영역도 자본의 출처에 따라 평가가 달라짐.
+          3.1-3.6의 6개 글로벌 재평가 영역이 누구에게 어떻게 보이는가. <strong>한 항목을 가로로 읽으면 → 해외 투자자가 매기는 가치 → 국내 투자자가 매기는 가치 → 글로벌 비교군이 평가하는 가치</strong>가 차례로 나옴. 같은 영역도 자본의 출처에 따라 평가가 달라짐.
         </p>
 
         <div class="matrix-flow">
@@ -4699,17 +5747,17 @@
           <tbody>
             <tr>
               <th>
-                <span class="ph-tag mono">§ 3.1</span>
+                <span class="ph-tag mono">3.1</span>
                 <span class="ph-name">기본 진단</span>
               </th>
               <td>
-                <span class="m-title">"외인 한자릿 종목"</span>
+                <span class="m-title">"외인 사실상 부재 종목"</span>
                 <span class="m-body">−70% 멀티플 디스카운트가 가장 강한 진입 장벽이자 동시에 가장 큰 업사이드 신호.</span>
-                <span class="m-data mono">PBR 1.0× vs 6×</span>
+                <span class="m-data mono">PBR 0.97× vs 6×</span>
               </td>
               <td>
                 <span class="m-title">국내 비교군 열위</span>
-                <span class="m-body">카뱅 외인 16.7% 대비 한자릿. 국내 인뱅 카테고리 후순위 인식.</span>
+                <span class="m-body">카뱅 외인 16.7% 대비 케뱅 0.04%. 국내 인뱅 카테고리 후순위 인식.</span>
                 <span class="m-data mono">vs 카뱅 16.7%</span>
               </td>
               <td>
@@ -4720,7 +5768,7 @@
             </tr>
             <tr>
               <th>
-                <span class="ph-tag mono">§ 3.2</span>
+                <span class="ph-tag mono">3.2</span>
                 <span class="ph-name">글로벌 IR</span>
               </th>
               <td>
@@ -4741,7 +5789,7 @@
             </tr>
             <tr>
               <th>
-                <span class="ph-tag mono">§ 3.3</span>
+                <span class="ph-tag mono">3.3</span>
                 <span class="ph-name">카테고리 포지셔닝</span>
               </th>
               <td>
@@ -4757,12 +5805,12 @@
               <td>
                 <span class="m-title">정량 지표 누적 필요</span>
                 <span class="m-body">PBR 4-6× 카테고리 진입에 필요한 ARPU·해외 익스포저·AI 처리량 등 정량 시그널 부족.</span>
-                <span class="m-data mono">PBR 1.0× → ?</span>
+                <span class="m-data mono">PBR 0.97× → ?</span>
               </td>
             </tr>
             <tr>
               <th>
-                <span class="ph-tag mono">§ 3.4</span>
+                <span class="ph-tag mono">3.4</span>
                 <span class="ph-name">동남아 진출</span>
               </th>
               <td>
@@ -4778,12 +5826,12 @@
               <td>
                 <span class="m-title">글로벌 핀테크 경쟁</span>
                 <span class="m-body">Wise·Revolut·Airwallex 등 기존 사업자와의 정량 격차가 큼. 진입 시 차별화 모델 필요.</span>
-                <span class="m-data mono">경쟁 강도 ↑</span>
+                <span class="m-data mono">경쟁 강도 증가</span>
               </td>
             </tr>
             <tr>
               <th>
-                <span class="ph-tag mono">§ 3.5</span>
+                <span class="ph-tag mono">3.5</span>
                 <span class="ph-name">지수 편입</span>
               </th>
               <td>
@@ -4804,7 +5852,7 @@
             </tr>
             <tr>
               <th>
-                <span class="ph-tag mono">§ 3.6</span>
+                <span class="ph-tag mono">3.6</span>
                 <span class="ph-name">AI Powered Bank</span>
               </th>
               <td>
@@ -4828,24 +5876,24 @@
 
         <div class="takeaway">
           <div class="takeaway-label mono">Reading the Matrix</div>
-          글로벌 재평가의 본질은 <strong>"카테고리 분류"의 재정의</strong>이나, 분류는 자가 정의가 아닌 <strong>정량 시그널·글로벌 IR 채널·실제 해외 사업의 누적 결과</strong>로 결정. <strong>§ 3.6 AI Powered Bank는 케뱅이 가시 시그널이 가장 강한 영역</strong>이지만 정량 KPI 공시·외인 IR 가시화가 동반되지 않으면 멀티플로 반영되기 어려움. § 3.5 Value-up 편입 검토는 비용 대비 효과가 큰 즉시 실행 옵션.
+          글로벌 재평가의 본질은 <strong>"카테고리 분류"의 재정의</strong>. 분류는 자가 정의가 아닌 <strong>정량 시그널·IR 채널·실제 해외 사업의 누적 결과</strong>. 3.5 Value-up 편입이 비용 대비 효과 최고.
         </div>
 
-        <!-- § 3.8 3사 비교 -->
+        <!-- 3.8 3사 비교 -->
         <div class="sub-h">
-          <div class="sub-h-num mono">§ 3.8</div>
+          <div class="sub-h-num mono">3.8</div>
           <div class="sub-h-title">3사 비교 · 글로벌 IR · 카테고리 · AI 내러티브</div>
         </div>
 
         <p class="sec-intro">
-          § 3.2-3.6 글로벌 재평가 6개 영역에서 케뱅 위치를 카뱅·토스 대비 비교. <strong>토스뱅크는 비상장으로 외인·지수·IR 항목은 평가 불가</strong>(n/a)이나 카테고리·동남아 진출 항목은 정성 비교 가능.
+          3.2-3.6 글로벌 재평가 6개 영역에서 케뱅 위치를 카뱅·토스 대비 비교. <strong>토스뱅크는 비상장으로 외인·지수·IR 항목은 평가 불가</strong>(n/a)이나 카테고리·동남아 진출 항목은 정성 비교 가능.
         </p>
 
         <div class="compare-intro">
           <div class="compare-intro-cell focus">
             <div class="compare-intro-name mono">Subject</div>
             <div class="compare-intro-title">케이뱅크</div>
-            <div class="compare-intro-sub">"한국 중소은행" 카테고리 · PBR 1.0×</div>
+            <div class="compare-intro-sub">"한국 중소은행" 카테고리 · PBR 0.97×</div>
           </div>
           <div class="compare-intro-cell">
             <div class="compare-intro-name mono">Peer A</div>
@@ -4870,7 +5918,7 @@
           </thead>
           <tbody>
             <tr>
-              <th><span class="h-tag mono">§ 3.2</span>글로벌 IR</th>
+              <th><span class="h-tag mono">3.2</span>글로벌 IR</th>
               <td class="focus-col">
                 <div class="cell-status">
                   <span class="status partial">●●○ Partial</span>
@@ -4886,7 +5934,7 @@
               <td class="na">— n/a (비상장)</td>
             </tr>
             <tr>
-              <th><span class="h-tag mono">§ 3.3</span>카테고리 포지셔닝</th>
+              <th><span class="h-tag mono">3.3</span>카테고리 포지셔닝</th>
               <td class="focus-col">
                 <div class="cell-status">
                   <span class="status gap">●○○ Gap</span>
@@ -4907,7 +5955,7 @@
               </td>
             </tr>
             <tr>
-              <th><span class="h-tag mono">§ 3.4</span>동남아·해외 진출</th>
+              <th><span class="h-tag mono">3.4</span>동남아·해외 진출</th>
               <td class="focus-col">
                 <div class="cell-status">
                   <span class="status gap">●○○ Gap</span>
@@ -4928,7 +5976,7 @@
               </td>
             </tr>
             <tr>
-              <th><span class="h-tag mono">§ 3.5</span>지수 편입</th>
+              <th><span class="h-tag mono">3.5</span>지수 편입</th>
               <td class="focus-col">
                 <div class="cell-status">
                   <span class="status gap">●○○ Gap</span>
@@ -4944,7 +5992,7 @@
               <td class="na">— n/a (비상장)</td>
             </tr>
             <tr>
-              <th><span class="h-tag mono">§ 3.6</span>AI Powered Bank 내러티브</th>
+              <th><span class="h-tag mono">3.6</span>AI Powered Bank 내러티브</th>
               <td class="focus-col">
                 <div class="cell-status">
                   <span class="status partial">●●○ Partial</span>
@@ -4969,7 +6017,7 @@
               <td class="focus-col">
                 <div class="cell-status">
                   <span class="status gap">●○○ Gap</span>
-                  <span class="cell-note">PBR 1.0×</span>
+                  <span class="cell-note">PBR 0.97×</span>
                 </div>
               </td>
               <td>
@@ -4991,18 +6039,18 @@
 
         <div class="takeaway">
           <div class="takeaway-label mono">Heatmap Reading</div>
-          글로벌 재평가에서 케뱅은 <strong>6개 중 4개 영역이 ●○○ Gap</strong>으로 카뱅 대비 큰 격차. 카뱅의 인도네시아 슈퍼뱅크가 글로벌 카테고리 진입의 결정적 사례. 다만 <strong>§ 3.6 AI Powered Bank 영역은 3사 모두 ●●○ Partial로 동률</strong>이며, 케뱅의 인뱅 최초·금융권 최초 AI 자산이 가시 시그널이 가장 강한 영역. 단 자가 카테고리 정의로는 부족하며, 정량 KPI·글로벌 IR·실제 사업 실체가 동반되어야 멀티플 반영 가능.
+          케뱅 <strong>6개 중 4개 영역이 Gap</strong>으로 카뱅 대비 격차. 3.6 AI는 3사 모두 Partial 동률이며 케뱅 가시 시그널이 가장 강함. <strong>정량 KPI·IR·해외 사업 실체</strong>가 동반되어야 멀티플 반영.
         </div>
 
         <!-- 격차 핵심 영역 카드 -->
         <div class="sub-h" style="margin-top: 32px;">
-          <div class="sub-h-num mono">§ 3.8.1</div>
+          <div class="sub-h-num mono">3.8.1</div>
           <div class="sub-h-title">격차가 큰 핵심 영역 상세 비교</div>
         </div>
 
         <div class="compare-card">
           <div class="compare-card-head">
-            <span class="compare-card-num mono">§ 3.4</span>
+            <span class="compare-card-num mono">3.4</span>
             <span class="compare-card-title">동남아 진출 · 카뱅 슈퍼뱅크 케이스</span>
           </div>
           <div class="compare-card-body">
@@ -5026,7 +6074,7 @@
 
         <div class="compare-card">
           <div class="compare-card-head">
-            <span class="compare-card-num mono">§ 3.3</span>
+            <span class="compare-card-num mono">3.3</span>
             <span class="compare-card-title">카테고리 포지셔닝 · 멀티플의 본질</span>
           </div>
           <div class="compare-card-body">
@@ -5050,7 +6098,7 @@
 
         <div class="compare-card">
           <div class="compare-card-head">
-            <span class="compare-card-num mono">§ 3.6</span>
+            <span class="compare-card-num mono">3.6</span>
             <span class="compare-card-title">AI Powered Bank · 케뱅의 추월 카드</span>
           </div>
           <div class="compare-card-body">
@@ -5073,11 +6121,14 @@
         </div>
 
         <div class="takeaway">
-          <div class="takeaway-label mono">§ 3.8 Takeaway</div>
-          글로벌 재평가는 케뱅이 가장 후행이나, <strong>§ 3.6 AI Powered Bank 영역에서 3사가 모두 ●●○ Partial로 동률</strong>이라는 점이 핵심. 케뱅 AI 자산의 가시 시그널이 가장 명확. <strong>① 글로벌 IR 채널 강화(§ 3.2), ② AI 정량 KPI 공시(§ 3.6), ③ 해외 사업 비전·옵션 구체화(§ 3.4)</strong>의 단계적 접근이 현실적. § 3.5 Value-up 편입 검토는 비용·리스크가 가장 낮은 즉시 실행 옵션. 슬로건이 아닌 데이터·실체 중심 접근.
+          <div class="takeaway-label mono">3.8 Takeaway</div>
+          글로벌 재평가는 케뱅이 가장 후행이나 3.6 AI 영역은 3사 동률. <strong>① 글로벌 IR(3.2) → ② AI 정량 KPI(3.6) → ③ 해외 사업 비전(3.4)</strong> 단계적 접근. 3.5 Value-up이 즉시 실행 옵션.
         </div>
 
-        <!-- 향후 아이데이션은 § 3.9, § 3.10 ... 로 누적 -->
+          </div>
+        </details>
+
+        <!-- 향후 아이데이션은 3.9, 3.10 ... 로 누적 -->
 
       </section>
     </div>
@@ -5091,6 +6142,7 @@
 </div>
 
 <script>
+  // 탭 인터랙션
   const tabs = document.querySelectorAll('.tab');
   const panes = document.querySelectorAll('.tab-pane');
 
@@ -5103,7 +6155,88 @@
       document.getElementById(target).classList.add('active');
     });
   });
+
+  // 플로팅 미니맵 - 현재 Zone 자동 감지
+  const minimapItems = document.querySelectorAll('.minimap-item');
+  const zones = ['zone-01', 'zone-02', 'zone-03', 'zone-04', 'zone-05'];
+  const zoneEls = zones.map(id => document.getElementById(id)).filter(Boolean);
+
+  function setActiveZone(zoneId) {
+    minimapItems.forEach(item => {
+      if (item.dataset.zone === zoneId) {
+        item.classList.add('active');
+      } else {
+        item.classList.remove('active');
+      }
+    });
+  }
+
+  // IntersectionObserver로 현재 화면 중앙에 가까운 Zone 감지
+  let currentActive = null;
+  const observer = new IntersectionObserver((entries) => {
+    // 화면에 보이는 zone 중 가장 위에 있는 것을 active로 설정
+    const visibleZones = entries
+      .filter(e => e.isIntersecting)
+      .map(e => ({
+        id: e.target.id,
+        top: e.target.getBoundingClientRect().top
+      }));
+
+    if (visibleZones.length > 0) {
+      // 화면 상단 1/3 지점에 가장 가까운 zone
+      visibleZones.sort((a, b) => {
+        const aDistance = Math.abs(a.top - window.innerHeight * 0.2);
+        const bDistance = Math.abs(b.top - window.innerHeight * 0.2);
+        return aDistance - bDistance;
+      });
+      const activeId = visibleZones[0].id;
+      if (activeId !== currentActive) {
+        currentActive = activeId;
+        setActiveZone(activeId);
+      }
+    }
+  }, {
+    // 화면 상단 30%-70% 영역을 트래킹 라인으로 사용
+    rootMargin: '-15% 0px -55% 0px',
+    threshold: [0, 0.1, 0.5]
+  });
+
+  zoneEls.forEach(el => observer.observe(el));
+
+  // 페이지 로드 시 초기 active 설정 (스크롤 위치 기반)
+  function updateActiveOnScroll() {
+    const scrollTop = window.scrollY + window.innerHeight * 0.25;
+    let active = null;
+    for (let i = zoneEls.length - 1; i >= 0; i--) {
+      if (zoneEls[i].offsetTop <= scrollTop) {
+        active = zoneEls[i].id;
+        break;
+      }
+    }
+    if (!active && zoneEls.length > 0) active = zoneEls[0].id;
+    if (active && active !== currentActive) {
+      currentActive = active;
+      setActiveZone(active);
+    }
+  }
+  updateActiveOnScroll();
+
+  // 백업 스크롤 리스너 (IntersectionObserver 미작동 시)
+  let scrollTimer;
+  window.addEventListener('scroll', () => {
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(updateActiveOnScroll, 50);
+  }, { passive: true });
+
+  // Top 버튼
+  const topBtn = document.getElementById('minimap-top');
+  if (topBtn) {
+    topBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
 </script>
 
+</div>
 </body>
 </html>
