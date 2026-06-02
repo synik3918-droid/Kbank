@@ -128,13 +128,22 @@ const SubHead = ({ children, top = 18 }) => (
   <div style={{ marginTop: top, marginBottom: 2, fontSize: 14, fontWeight: 700, color: T.fgBase }}>{children}</div>
 );
 
+/* SPEC / DUMMY 구분 뱃지 */
+function Badge({ spec }) {
+  return (
+    <span style={{ display: "inline-block", fontSize: 11, fontWeight: 700, lineHeight: 1, padding: "4px 7px", borderRadius: 5, marginRight: 8, verticalAlign: "1px", letterSpacing: "0.03em", background: spec ? "#eef1ff" : "#f0f1f3", color: spec ? T.primary : T.placeholder }}>
+      {spec ? "SPEC" : "DUMMY"}
+    </span>
+  );
+}
+
 /* ════════════════════════════════════════════════════════════════
    GNB 메가메뉴 펼침 모션 스펙 — 아코디언 본문
    ※ 모션값은 Figma 프로토타입 추출이 아닌, 표준 메가메뉴 패턴 기준 권장 스펙
    ──────────────────────────────────────────────────────────────── */
 const SPEC = [
   {
-    id: "tokens",
+    id: "tokens", kind: "spec",
     tag: "모션값",
     question: "GNB 메가메뉴 펼침 — 모션 토큰 정보값",
     answer: (
@@ -171,7 +180,7 @@ const SPEC = [
     ),
   },
   {
-    id: "open",
+    id: "open", kind: "spec",
     tag: "펼침",
     question: "메뉴에 마우스를 올리면 어떻게 펼쳐지나요? (열기 시퀀스)",
     answer: (
@@ -188,7 +197,7 @@ const SPEC = [
     ),
   },
   {
-    id: "close",
+    id: "close", kind: "spec",
     tag: "닫힘",
     question: "메뉴에서 벗어나면 어떻게 닫히나요? (닫기 시퀀스)",
     answer: (
@@ -205,7 +214,7 @@ const SPEC = [
     ),
   },
   {
-    id: "impl",
+    id: "impl", kind: "spec",
     tag: "개발",
     question: "개발 구현 방식 — DOM 구조와 상태 관리",
     answer: (
@@ -244,7 +253,7 @@ const SPEC = [
     ),
   },
   {
-    id: "rules",
+    id: "rules", kind: "spec",
     tag: "인터랙션",
     question: "트리거 규칙 — hover / click / 스크롤 / 모바일",
     answer: (
@@ -260,7 +269,7 @@ const SPEC = [
     ),
   },
   {
-    id: "a11y",
+    id: "a11y", kind: "spec",
     tag: "접근성",
     question: "접근성 & QA 체크리스트",
     answer: (
@@ -285,42 +294,75 @@ const SPEC = [
     ),
   },
 
-  /* ── 7~15: 더미 데이터 (스크롤/목록 테스트용) ───────────── */
   {
-    id: "dummy-1", tag: "공통", question: "[더미] 비밀번호를 5회 잘못 입력해서 잠겼어요.",
+    id: "scroll", kind: "spec",
+    tag: "스크롤",
+    question: "항목이 열릴 때 자동 스크롤은 어떻게 동작하나요?",
+    answer: (
+      <>
+        <P>항목을 펼치면 해당 헤더가 sticky GNB 아래 눈높이로 자동 이동합니다. (이 FAQ 아코디언 리스트 동작)</P>
+        <SpecTable rows={[
+          ["메서드", "el.scrollIntoView({ behavior: 'smooth', block: 'start' })"],
+          ["오프셋", "scroll-margin-top: 88px  /* GNB 64 + 여백 24 */"],
+          ["실행 시점", "펼침 트랜지션 종료 후 = 300ms + 30ms"],
+          ["초기 렌더", "스킵 (기본 열림 항목은 자동 스크롤 안 함)"],
+        ]} />
+        <SubHead>개발</SubHead>
+        <Bullets items={[
+          "오프셋은 CSS scroll-margin-top으로 처리 → sticky 헤더에 가리지 않음,",
+          "단일 펼침은 이전 항목이 닫히며 위치가 바뀌므로 트랜지션 종료 후 스크롤해야 어긋나지 않음,",
+          "JS는 scrollIntoView 호출만. useEffect([isOpen]) + mounted ref로 초기 렌더 스킵,",
+        ]} />
+        <Note>화면 정중앙 정렬을 원하면 <HL>block: 'center'</HL>로 변경. 멈추는 높이는 scroll-margin-top 값으로 조정.</Note>
+      </>
+    ),
+  },
+  {
+    id: "hover", kind: "spec",
+    tag: "호버",
+    question: "목록에 마우스를 올리면 어떻게 딤되나요?",
+    answer: (
+      <>
+        <P>목록 행에 hover 시 배경 딤 + 셰브론 색 변화가 적용됩니다.</P>
+        <SpecTable rows={[
+          ["행 배경", "#0000000d  /* 5% 블랙 = surface/section/divider-thin-transparent */"],
+          ["셰브론 color", "#545b69 → #2a2e36"],
+          ["transition", "background, color · 140ms ease"],
+          ["행 radius", "8px  /* 하이라이트 라운드 */"],
+        ]} />
+        <Note>딤 농도는 토큰값(<HL>T.dimThin</HL>) 교체로 조정. 예: #00000014(8%)면 더 또렷. 펼침/스크롤 모션과 독립적으로 동작.</Note>
+      </>
+    ),
+  },
+
+  /* ── 더미 데이터 (목록/스크롤 테스트용) ───────────── */
+  {
+    id: "dummy-1", kind: "dummy", tag: "공통", question: "[더미] 비밀번호를 5회 잘못 입력해서 잠겼어요.",
     answer: (<><P>더미 데이터입니다. 본인인증 절차를 거치면 잠금을 해제하고 비밀번호를 재설정할 수 있습니다.</P><P top={10}>실제 콘텐츠 연동 시 이 본문을 교체하세요.</P></>),
   },
   {
-    id: "dummy-2", tag: "카드", question: "[더미] 체크카드 결제가 거절되는 이유가 뭔가요?",
+    id: "dummy-2", kind: "dummy", tag: "카드", question: "[더미] 체크카드 결제가 거절되는 이유가 뭔가요?",
     answer: (<><P>더미 데이터입니다. 잔액 부족, 1일 결제 한도 초과, 해외결제 차단 설정 등이 원인일 수 있습니다.</P></>),
   },
   {
-    id: "dummy-3", tag: "이체", question: "[더미] 예약이체를 취소하려면 어떻게 하나요?",
+    id: "dummy-3", kind: "dummy", tag: "이체", question: "[더미] 예약이체를 취소하려면 어떻게 하나요?",
     answer: (<><P>더미 데이터입니다. 앱 [이체] → [예약/자동이체 관리]에서 예정된 건을 선택해 취소할 수 있습니다.</P><P top={10}>실행 시각 직전에는 취소가 제한될 수 있습니다.</P></>),
   },
   {
-    id: "dummy-4", tag: "예금", question: "[더미] 적금 자동이체일을 변경하고 싶어요.",
+    id: "dummy-4", kind: "dummy", tag: "예금", question: "[더미] 적금 자동이체일을 변경하고 싶어요.",
     answer: (<><P>더미 데이터입니다. 상품 상세 화면에서 자동이체일을 변경할 수 있으며, 변경은 다음 회차부터 적용됩니다.</P></>),
   },
   {
-    id: "dummy-5", tag: "대출", question: "[더미] 대출 이자 납부일을 바꿀 수 있나요?",
+    id: "dummy-5", kind: "dummy", tag: "대출", question: "[더미] 대출 이자 납부일을 바꿀 수 있나요?",
     answer: (<><P>더미 데이터입니다. 상품 종류에 따라 납부일 변경 가능 여부가 다르며, 일부 상품은 영업점 상담이 필요합니다.</P><P top={10}>변경 가능 범위와 적용 시점은 상품 약관을 확인하세요.</P></>),
   },
   {
-    id: "dummy-6", tag: "인증·OTP", question: "[더미] OTP가 자꾸 인증 오류가 납니다.",
+    id: "dummy-6", kind: "dummy", tag: "인증·OTP", question: "[더미] OTP가 자꾸 인증 오류가 납니다.",
     answer: (<><P>더미 데이터입니다. 기기 시간이 실제 시간과 어긋나면 OTP 오류가 발생합니다. 자동 시간 설정을 켜고 다시 시도해 주세요.</P></>),
   },
   {
-    id: "dummy-7", tag: "앱서비스", question: "[더미] 앱 알림이 오지 않아요.",
+    id: "dummy-7", kind: "dummy", tag: "앱서비스", question: "[더미] 앱 알림이 오지 않아요.",
     answer: (<><P>더미 데이터입니다. 휴대폰 설정 → 알림에서 앱 알림 허용 여부를 확인하고, 앱 내 알림 설정도 함께 점검해 주세요.</P></>),
-  },
-  {
-    id: "dummy-8", tag: "해외", question: "[더미] 해외에서도 앱을 사용할 수 있나요?",
-    answer: (<><P>더미 데이터입니다. 대부분의 기능은 해외에서도 이용 가능하나, 일부 본인확인 절차는 국내 통신망이 필요할 수 있습니다.</P></>),
-  },
-  {
-    id: "dummy-9", tag: "기타", question: "[더미] 계좌를 해지하고 싶어요.",
-    answer: (<><P>더미 데이터입니다. 앱 [전체] → [계좌 관리]에서 잔액을 모두 출금한 뒤 해지 신청을 진행할 수 있습니다.</P><P top={10}>연결된 자동이체·카드가 있으면 먼저 정리해야 합니다.</P></>),
   },
 ];
 
@@ -356,6 +398,7 @@ function AccordionItem({ item, isOpen, onToggle, isLast }) {
         style={{ width: "100%", appearance: "none", border: "none", background: hover ? T.dimThin : "transparent", font: "inherit", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, padding: "24px 16px", borderRadius: T.radiusSm, transition: "background 140ms ease" }}>
         <span style={{ color: T.primary, fontWeight: 700, fontSize: 16, flex: "none", width: 18 }}>Q</span>
         <span style={{ flex: 1, fontSize: 16, fontWeight: 500, color: T.fgBase, letterSpacing: "-0.3px" }}>
+          <Badge spec={item.kind === "spec"} />
           <span style={{ color: T.navySelected, fontWeight: 600 }}>[{item.tag}]</span> {item.question}
         </span>
         <svg viewBox="0 0 24 24" fill="none" style={{ flex: "none", width: 22, height: 22, color: hover ? T.fgSecondary : T.fgTertiary, transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", transition: `transform ${MOTION.duration}ms ${MOTION.easing}, color 140ms ease` }}>
