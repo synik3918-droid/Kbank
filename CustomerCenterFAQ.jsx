@@ -1,4 +1,4 @@
-import { useState, useId, useCallback } from "react";
+import { useState, useId, useCallback, useRef, useEffect } from "react";
 
 /* ════════════════════════════════════════════════════════════════
    KDS 토큰 (Figma 변수에서 추출)
@@ -18,6 +18,7 @@ const T = {
   bgSecondary: "#f7f8fb",
   tableHeader: "#eff2f7",
   tableBorder: "#828ca2",
+  dimThin: "#0000000d", // color-sem/surface/section/divider-thin-transparent (5% 블랙) — hover 딤
   radiusSm: 8,
   radiusMd: 10,
 };
@@ -262,6 +263,44 @@ const SPEC = [
       </>
     ),
   },
+
+  /* ── 7~15: 더미 데이터 (스크롤/목록 테스트용) ───────────── */
+  {
+    id: "dummy-1", tag: "공통", question: "[더미] 비밀번호를 5회 잘못 입력해서 잠겼어요.",
+    answer: (<><P>더미 데이터입니다. 본인인증 절차를 거치면 잠금을 해제하고 비밀번호를 재설정할 수 있습니다.</P><P top={10}>실제 콘텐츠 연동 시 이 본문을 교체하세요.</P></>),
+  },
+  {
+    id: "dummy-2", tag: "카드", question: "[더미] 체크카드 결제가 거절되는 이유가 뭔가요?",
+    answer: (<><P>더미 데이터입니다. 잔액 부족, 1일 결제 한도 초과, 해외결제 차단 설정 등이 원인일 수 있습니다.</P></>),
+  },
+  {
+    id: "dummy-3", tag: "이체", question: "[더미] 예약이체를 취소하려면 어떻게 하나요?",
+    answer: (<><P>더미 데이터입니다. 앱 [이체] → [예약/자동이체 관리]에서 예정된 건을 선택해 취소할 수 있습니다.</P><P top={10}>실행 시각 직전에는 취소가 제한될 수 있습니다.</P></>),
+  },
+  {
+    id: "dummy-4", tag: "예금", question: "[더미] 적금 자동이체일을 변경하고 싶어요.",
+    answer: (<><P>더미 데이터입니다. 상품 상세 화면에서 자동이체일을 변경할 수 있으며, 변경은 다음 회차부터 적용됩니다.</P></>),
+  },
+  {
+    id: "dummy-5", tag: "대출", question: "[더미] 대출 이자 납부일을 바꿀 수 있나요?",
+    answer: (<><P>더미 데이터입니다. 상품 종류에 따라 납부일 변경 가능 여부가 다르며, 일부 상품은 영업점 상담이 필요합니다.</P><P top={10}>변경 가능 범위와 적용 시점은 상품 약관을 확인하세요.</P></>),
+  },
+  {
+    id: "dummy-6", tag: "인증·OTP", question: "[더미] OTP가 자꾸 인증 오류가 납니다.",
+    answer: (<><P>더미 데이터입니다. 기기 시간이 실제 시간과 어긋나면 OTP 오류가 발생합니다. 자동 시간 설정을 켜고 다시 시도해 주세요.</P></>),
+  },
+  {
+    id: "dummy-7", tag: "앱서비스", question: "[더미] 앱 알림이 오지 않아요.",
+    answer: (<><P>더미 데이터입니다. 휴대폰 설정 → 알림에서 앱 알림 허용 여부를 확인하고, 앱 내 알림 설정도 함께 점검해 주세요.</P></>),
+  },
+  {
+    id: "dummy-8", tag: "해외", question: "[더미] 해외에서도 앱을 사용할 수 있나요?",
+    answer: (<><P>더미 데이터입니다. 대부분의 기능은 해외에서도 이용 가능하나, 일부 본인확인 절차는 국내 통신망이 필요할 수 있습니다.</P></>),
+  },
+  {
+    id: "dummy-9", tag: "기타", question: "[더미] 계좌를 해지하고 싶어요.",
+    answer: (<><P>더미 데이터입니다. 앱 [전체] → [계좌 관리]에서 잔액을 모두 출금한 뒤 해지 신청을 진행할 수 있습니다.</P><P top={10}>연결된 자동이체·카드가 있으면 먼저 정리해야 합니다.</P></>),
+  },
 ];
 
 const CATEGORIES_1 = ["요즘 많이하는 문의", "전체", "민생회복소비쿠폰", "예금·적금", "대출", "카드", "청소년 서비스", "해외", "보험", "케이뱅크 페이"];
@@ -274,15 +313,31 @@ const NAV = ["은행소개", "예적금", "대출", "카드", "사장님", "서�
 function AccordionItem({ item, isOpen, onToggle, isLast }) {
   const panelId = useId();
   const btnId = useId();
+  const [hover, setHover] = useState(false);
+  const itemRef = useRef(null);
+  const mounted = useRef(false);
+
+  // 열릴 때 sticky GNB 아래로 자동 스크롤 (펼침 트랜지션 종료 후 위치 확정)
+  useEffect(() => {
+    if (!mounted.current) { mounted.current = true; return; } // 초기 렌더(기본 열림)는 스킵
+    if (isOpen && itemRef.current) {
+      const t = setTimeout(() => {
+        itemRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, MOTION.duration + 30);
+      return () => clearTimeout(t);
+    }
+  }, [isOpen]);
+
   return (
-    <div style={{ borderBottom: isLast ? "none" : `1px solid ${T.borderQuinary}` }}>
+    <div ref={itemRef} style={{ borderBottom: isLast ? "none" : `1px solid ${T.borderQuinary}`, scrollMarginTop: 88 }}>
       <button id={btnId} aria-expanded={isOpen} aria-controls={panelId} onClick={onToggle}
-        style={{ width: "100%", appearance: "none", border: "none", background: "transparent", font: "inherit", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, padding: "24px 4px" }}>
+        onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+        style={{ width: "100%", appearance: "none", border: "none", background: hover ? T.dimThin : "transparent", font: "inherit", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, padding: "24px 16px", borderRadius: T.radiusSm, transition: "background 140ms ease" }}>
         <span style={{ color: T.primary, fontWeight: 700, fontSize: 16, flex: "none", width: 18 }}>Q</span>
         <span style={{ flex: 1, fontSize: 16, fontWeight: 500, color: T.fgBase, letterSpacing: "-0.3px" }}>
           <span style={{ color: T.navySelected, fontWeight: 600 }}>[{item.tag}]</span> {item.question}
         </span>
-        <svg viewBox="0 0 24 24" fill="none" style={{ flex: "none", width: 22, height: 22, color: T.fgTertiary, transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", transition: `transform ${MOTION.duration}ms ${MOTION.easing}` }}>
+        <svg viewBox="0 0 24 24" fill="none" style={{ flex: "none", width: 22, height: 22, color: hover ? T.fgSecondary : T.fgTertiary, transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", transition: `transform ${MOTION.duration}ms ${MOTION.easing}, color 140ms ease` }}>
           <path d="M6 9L12 15L18 9" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
