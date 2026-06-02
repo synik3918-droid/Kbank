@@ -1,22 +1,4 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>K-Bank · 통합 탭 전환 프로토타입</title>
-<link rel="stylesheet" as="style" crossorigin
-  href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-<style>* { box-sizing: border-box; } html, body { margin:0; padding:0; }
-  body { font-family:'Pretendard Variable',Pretendard,-apple-system,sans-serif; }</style>
-<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
-</head>
-<body>
-<div id="root"></div>
-<script type="text/babel" data-presets="react">
-const { useState, useId, useRef, useEffect, useCallback } = React;
-
+import { useState, useId, useRef, useEffect, useCallback } from "react";
 
 /* ════════════════════════════════════════════════════════════════
    KDS 토큰 (Figma 변수 추출 — 두 페이지 공통 디자인 시스템)
@@ -1028,7 +1010,7 @@ function SpecPage() {
 }
 
 
-function App() {
+export default function App() {
   const [tab, setTab] = useState("bank");
   const [mode, setMode] = useState("proto"); // proto | spec
   const [pageStage, setPageStage] = useState(2); // 0 없음 · 1 절제 · 2 기본 · 3 강조
@@ -1182,9 +1164,3 @@ function App() {
     </div>
   );
 }
-
-
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-</script>
-</body>
-</html>
