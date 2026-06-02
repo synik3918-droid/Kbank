@@ -55,23 +55,68 @@ const NAV = ["은행소개", "예적금", "대출", "카드", "사장님", "서�
 function GNB({ tab, setTab, onProduct, productSub }) {
   const tabOf = { "은행소개": "bank", "고객센터": "faq", "새소식&블로그": "news" };
   const PRODUCT_MENUS = ["예적금", "대출", "카드", "사장님", "서비스", "투자"];
+  const [drawer, setDrawer] = useState(false);
+
+  const go = (n) => {
+    const isProduct = PRODUCT_MENUS.includes(n);
+    if (isProduct) onProduct(n);
+    else if (tabOf[n]) setTab(tabOf[n]);
+    setDrawer(false);
+  };
+  const isActive = (n) => {
+    const isProduct = PRODUCT_MENUS.includes(n);
+    return isProduct ? (tab === "product" && productSub === n) : (tabOf[n] && tabOf[n] === tab);
+  };
+
   return (
     <header style={{ borderBottom: `1px solid ${T.borderQuinary}`, background: T.bgBase, position: "sticky", top: 0, zIndex: 20 }}>
       <div style={{ maxWidth: 1180, margin: "0 auto", height: 64, display: "flex", alignItems: "center", gap: 32, padding: "0 24px" }}>
         <span style={{ fontSize: 22, fontWeight: 800, color: T.brandNavy, letterSpacing: "-0.5px", flex: "none", cursor: "pointer" }} onClick={() => setTab("bank")}>Kbank</span>
-        <nav style={{ flex: 1, display: "flex", gap: 24, justifyContent: "center", flexWrap: "wrap" }}>
+        <nav className="gnb-nav" style={{ flex: 1, display: "flex", gap: 24, justifyContent: "center", flexWrap: "wrap" }}>
           {NAV.map((n) => {
-            const isProduct = PRODUCT_MENUS.includes(n);
-            const linked = tabOf[n] || (isProduct ? "product" : null);
-            const active = isProduct ? (tab === "product" && productSub === n) : (linked && linked === tab);
+            const linked = tabOf[n] || (PRODUCT_MENUS.includes(n) ? "product" : null);
+            const active = isActive(n);
             return (
-              <span key={n} onClick={() => { if (isProduct) onProduct(n); else if (linked) setTab(linked); }}
+              <span key={n} onClick={() => go(n)}
                 style={{ fontSize: 15, fontWeight: active ? 700 : 500, color: active ? T.primary : T.fgSecondary, cursor: linked ? "pointer" : "default", whiteSpace: "nowrap" }}>{n}</span>
             );
           })}
         </nav>
-        <button style={{ flex: "none", appearance: "none", border: "none", background: T.primary, color: "#fff", font: "inherit", fontSize: 14, fontWeight: 600, padding: "9px 16px", borderRadius: T.radiusSm, cursor: "pointer" }}>앱 다운로드</button>
+        <button className="gnb-cta" style={{ flex: "none", appearance: "none", border: "none", background: T.primary, color: "#fff", font: "inherit", fontSize: 14, fontWeight: 600, padding: "9px 16px", borderRadius: T.radiusSm, cursor: "pointer", marginLeft: "auto" }}>앱 다운로드</button>
+
+        {/* 햄버거 (모바일) */}
+        <button className="hamburger" onClick={() => setDrawer(true)} aria-label="메뉴 열기"
+          style={{ marginLeft: "auto", appearance: "none", border: "none", background: "transparent", cursor: "pointer", width: 40, height: 40, alignItems: "center", justifyContent: "center", color: T.fgBase }}>
+          <svg viewBox="0 0 24 24" fill="none" style={{ width: 24, height: 24 }}><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
+        </button>
       </div>
+
+      {/* 모바일 드로어 */}
+      {drawer && (
+        <>
+          <div className="drawer-backdrop" onClick={() => setDrawer(false)} />
+          <div className="drawer" role="dialog" aria-label="메뉴">
+            <div style={{ display: "flex", alignItems: "center", padding: "18px 20px", borderBottom: `1px solid ${T.borderQuinary}` }}>
+              <span style={{ fontSize: 20, fontWeight: 800, color: T.brandNavy }}>Kbank</span>
+              <button onClick={() => setDrawer(false)} aria-label="닫기" style={{ marginLeft: "auto", appearance: "none", border: "none", background: "transparent", cursor: "pointer", color: T.fgTertiary, width: 36, height: 36 }}>
+                <svg viewBox="0 0 24 24" fill="none" style={{ width: 22, height: 22 }}><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
+              </button>
+            </div>
+            <nav style={{ padding: "8px 0" }}>
+              {NAV.map((n) => {
+                const active = isActive(n);
+                return (
+                  <div key={n} onClick={() => go(n)}
+                    style={{ padding: "14px 22px", fontSize: 16, fontWeight: active ? 700 : 500, color: active ? T.primary : T.fgBase, cursor: "pointer", background: active ? "#f4f6ff" : "transparent" }}>{n}</div>
+                );
+              })}
+            </nav>
+            <div style={{ padding: "12px 20px 24px" }}>
+              <button style={{ width: "100%", appearance: "none", border: "none", background: T.primary, color: "#fff", font: "inherit", fontSize: 15, fontWeight: 600, padding: "13px 0", borderRadius: T.radiusSm, cursor: "pointer" }}>앱 다운로드</button>
+            </div>
+          </div>
+        </>
+      )}
     </header>
   );
 }
@@ -106,18 +151,18 @@ function BankIntro({ subtabMotion = true }) {
   };
   return (
     <main style={{ maxWidth: 880, margin: "0 auto", padding: "48px 24px 0" }}>
-      <h1 style={{ fontSize: 36, fontWeight: 700, letterSpacing: "-0.5px", color: T.fgBase, margin: "0 0 28px" }}>브랜드</h1>
+      <h1 className="page-h1" style={{ fontSize: 36, fontWeight: 700, letterSpacing: "-0.5px", color: T.fgBase, margin: "0 0 28px" }}>브랜드</h1>
 
       {/* 히어로 */}
       <div style={{ position: "relative", height: 320, borderRadius: T.radiusLg, overflow: "hidden", background: "linear-gradient(120deg, #8aa0b8 0%, #c8b89a 55%, #d9c9a8 100%)" }}>
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 55%)" }} />
-        <div style={{ position: "absolute", left: 28, bottom: 28, color: "#fff", fontSize: 24, fontWeight: 700, lineHeight: 1.4, letterSpacing: "-0.5px" }}>
+        <div style={{ position: "absolute", left: 28, bottom: 28, color: "#fff", fontSize: 24, fontWeight: 700, lineHeight: 1.4, letterSpacing: "-0.5px" }} className="hero-copy">
           금융을 더 쉽고 편하게<br />기분 좋은 금융생활을 만드는 은행
         </div>
       </div>
 
       {/* 서브탭 */}
-      <div style={{ display: "flex", borderBottom: `1px solid ${T.borderQuinary}`, marginTop: 32 }}>
+      <div className="subtabs" style={{ borderBottom: `1px solid ${T.borderQuinary}`, marginTop: 32 }}>
         {subTab("story", "브랜드 스토리")}
         {subTab("resource", "리소스 센터")}
       </div>
@@ -211,7 +256,7 @@ function ResourceCenter({ reveal = true }) {
 
       {/* 2. 로고 규정 */}
       <ResSection reveal={reveal} title="로고 규정" desc="로고 주변에는 충분한 여백(Clear Space)을 확보하고, 최소 크기 이하로는 사용하지 않습니다.">
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+        <div className="grid-2" style={{ gap: 24 }}>
           <div style={{ ...card, height: 200, flexDirection: "column", gap: 8 }}>
             <span style={{ fontSize: 12, color: T.placeholder }}>여백 규정</span><KbankLogo size={36} />
           </div>
@@ -223,7 +268,7 @@ function ResourceCenter({ reveal = true }) {
 
       {/* 3. 파트너십 표기 규정 */}
       <ResSection reveal={reveal} title="파트너십 표기 규정" desc="제휴사 로고와 함께 표기할 때는 정해진 락업 규칙과 간격을 지켜야 합니다.">
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+        <div className="grid-2" style={{ gap: 24 }}>
           <div style={{ ...card, height: 232 }}><span style={{ fontSize: 22, fontWeight: 700, color: T.accent }}>Kbank ×</span></div>
           <div style={{ display: "grid", gap: 24 }}>
             <div style={{ ...card, height: 104, gap: 10 }}><KbankLogo size={22} /><span style={{ color: T.placeholder }}>×</span><span style={{ fontWeight: 700, color: "#e3002b" }}>BC card</span></div>
@@ -234,7 +279,7 @@ function ResourceCenter({ reveal = true }) {
 
       {/* 4. 브랜드명 사용 가이드 */}
       <ResSection reveal={reveal} title="브랜드명 사용 가이드" desc="영문은 Kbank, 한글은 케이뱅크로 표기합니다. 임의 변형·띄어쓰기 오용은 지양해 주세요.">
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+        <div className="grid-2" style={{ gap: 24 }}>
           <div style={{ ...card, height: 160, flexDirection: "column", gap: 6 }}><span style={{ fontSize: 12, color: T.placeholder }}>영문(권장)</span><span style={{ fontSize: 36, fontWeight: 700, color: T.fgBase }}>Kbank</span></div>
           <div style={{ ...card, height: 160, flexDirection: "column", gap: 6 }}><span style={{ fontSize: 12, color: T.placeholder }}>국문</span><span style={{ fontSize: 36, fontWeight: 700, color: T.fgBase }}>케이뱅크</span></div>
         </div>
@@ -248,14 +293,14 @@ function ResourceCenter({ reveal = true }) {
         <div style={{ height: 100, background: "#4262ff", borderRadius: T.radiusMd, padding: "18px 24px", color: "#fff", marginBottom: 16 }}>
           <div style={{ fontSize: 16, fontWeight: 700 }}>Secondary Color</div><div style={{ fontSize: 13, opacity: 0.8, marginTop: 4 }}>#4262FF</div>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10 }}>
+        <div className="grid-4" style={{ gap: 10 }}>
           {palette.slice(0, 4).map((c) => <div key={c} style={{ height: 64, background: c, borderRadius: T.radiusSm }} />)}
         </div>
       </ResSection>
 
       {/* 6. 컬러 규정 */}
       <ResSection reveal={reveal} title="컬러 규정" desc="배경 색상에 따라 가독성과 명도 대비를 고려해 로고 버전을 선택합니다.">
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 0, borderRadius: T.radiusMd, overflow: "hidden" }}>
+        <div className="grid-4" style={{ gap: 0, borderRadius: T.radiusMd, overflow: "hidden" }}>
           {palette.map((c, i) => (
             <div key={c} style={{ height: 92, background: c, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <KbankLogo color={i < 3 || i > 5 ? "#fff" : "#fff"} size={18} />
@@ -266,7 +311,7 @@ function ResourceCenter({ reveal = true }) {
 
       {/* 7. 서비스 아이콘 */}
       <ResSection reveal={reveal} title="서비스 아이콘" desc="앱 아이콘은 정해진 그리드와 배경 위에서 일관되게 사용합니다.">
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
+        <div className="grid-4" style={{ gap: 16 }}>
           {[T.accent, T.brandNavy, T.primary, "#2f4bff"].map((c, i) => (
             <div key={i} style={{ ...card, height: 120 }}>
               <div style={{ width: 56, height: 56, borderRadius: 16, background: c, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 28, fontWeight: 800 }}>K</div>
@@ -277,7 +322,7 @@ function ResourceCenter({ reveal = true }) {
 
       {/* 8. 브랜드 폰트 */}
       <ResSection reveal={reveal} title="브랜드 폰트" desc="국문·영문 모두 Pretendard를 사용합니다. Light~Bold 웨이트를 용도에 맞게 활용하세요.">
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+        <div className="grid-2" style={{ gap: 24 }}>
           <div style={{ background: T.bgSecondary, borderRadius: T.radiusMd, padding: 28 }}>
             <div style={{ fontSize: 12, color: T.placeholder, marginBottom: 12 }}>국문</div>
             <div style={{ fontSize: 32, fontWeight: 700, color: T.fgBase }}>프리텐다드</div>
@@ -293,7 +338,7 @@ function ResourceCenter({ reveal = true }) {
 
       {/* 9. 이미지 가이드 */}
       <ResSection reveal={reveal} title="이미지 가이드" desc="브랜드 무드에 맞는 이미지로 신뢰감과 친근함을 함께 전달합니다.">
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div className="grid-2" style={{ gap: 16 }}>
           {[
             "linear-gradient(135deg,#1b3a8c,#2f4bff)",
             "linear-gradient(135deg,#3a4a6b,#7d90c4)",
@@ -571,9 +616,9 @@ function ProductGuide({ sub, setSub, subtabMotion = true }) {
   const cats = PRODUCTS[sub] || [];
   return (
     <main style={{ maxWidth: 880, margin: "0 auto", padding: "48px 24px 0" }}>
-      <h1 style={{ fontSize: 36, fontWeight: 700, letterSpacing: "-0.5px", color: T.fgBase, margin: "0 0 28px" }}>상품안내</h1>
+      <h1 className="page-h1" style={{ fontSize: 36, fontWeight: 700, letterSpacing: "-0.5px", color: T.fgBase, margin: "0 0 28px" }}>상품안내</h1>
 
-      <div style={{ display: "flex", borderBottom: `1px solid ${T.borderQuinary}`, marginBottom: 8 }}>
+      <div className="subtabs" style={{ borderBottom: `1px solid ${T.borderQuinary}`, marginBottom: 8 }}>
         {PRODUCT_SUBS.map((s) => {
           const active = s === sub;
           return (
@@ -587,7 +632,7 @@ function ProductGuide({ sub, setSub, subtabMotion = true }) {
         {cats.map((c) => (
           <section key={c.cat} style={{ marginTop: 48 }}>
             <h2 style={{ fontSize: 15, fontWeight: 700, color: T.fgTertiary, margin: "0 0 8px" }}>{c.cat}</h2>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 40px", borderTop: `1px solid ${T.borderQuinary}` }}>
+            <div className="grid-2" style={{ gap: "0 40px", borderTop: `1px solid ${T.borderQuinary}` }}>
               {c.items.map((it) => <ProductCard key={it.name} item={it} />)}
             </div>
           </section>
@@ -642,7 +687,7 @@ function NewsSection({ cat, items, more }) {
           </button>
         )}
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
+      <div className="grid-3" style={{ gap: 24 }}>
         {items.map((it, i) => <NewsCard key={i} item={it} />)}
       </div>
     </section>
@@ -654,16 +699,16 @@ function NewsBlog({ sub, setSub, subtabMotion = true }) {
   const shown = sub === "전체" ? order : [sub];
   return (
     <main style={{ maxWidth: 880, margin: "0 auto", padding: "48px 24px 0" }}>
-      <h1 style={{ fontSize: 36, fontWeight: 700, letterSpacing: "-0.5px", color: T.fgBase, margin: "0 0 28px" }}>새소식 & 블로그</h1>
+      <h1 className="page-h1" style={{ fontSize: 36, fontWeight: 700, letterSpacing: "-0.5px", color: T.fgBase, margin: "0 0 28px" }}>새소식 & 블로그</h1>
 
       {/* 히어로 */}
       <div style={{ position: "relative", height: 280, borderRadius: T.radiusLg, overflow: "hidden", background: "linear-gradient(120deg,#3a5a8c 0%,#6b8cae 50%,#9ab0c8 100%)" }}>
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 55%)" }} />
-        <div style={{ position: "absolute", left: 28, bottom: 28, color: "#fff", fontSize: 24, fontWeight: 700, lineHeight: 1.4, letterSpacing: "-0.5px" }}>케이뱅크는 요즘<br />이렇게 지내요</div>
+        <div style={{ position: "absolute", left: 28, bottom: 28, color: "#fff", fontSize: 24, fontWeight: 700, lineHeight: 1.4, letterSpacing: "-0.5px" }} className="hero-copy">케이뱅크는 요즘<br />이렇게 지내요</div>
       </div>
 
       {/* 서브탭 */}
-      <div style={{ display: "flex", borderBottom: `1px solid ${T.borderQuinary}`, marginTop: 28, marginBottom: 8 }}>
+      <div className="subtabs" style={{ borderBottom: `1px solid ${T.borderQuinary}`, marginTop: 28, marginBottom: 8 }}>
         {NEWS_SUBS.map((s) => {
           const active = s === sub;
           return (
@@ -688,7 +733,7 @@ function CustomerFAQ() {
   const toggle = useCallback((id) => setOpenId((c) => (c === id ? null : id)), []);
   return (
     <main style={{ maxWidth: 880, margin: "0 auto", padding: "56px 24px 0" }}>
-      <h1 style={{ fontSize: 44, fontWeight: 700, letterSpacing: "-0.5px", color: T.fgBase, margin: "0 0 24px" }}>자주 묻는 질문</h1>
+      <h1 className="page-h1" style={{ fontSize: 44, fontWeight: 700, letterSpacing: "-0.5px", color: T.fgBase, margin: "0 0 24px" }}>자주 묻는 질문</h1>
       <div style={{ display: "flex", alignItems: "center", gap: 8, border: `1px solid ${T.fieldBorder}`, borderRadius: T.radiusMd, padding: "14px 18px", marginBottom: 40 }}>
         <input placeholder="예 : 신분증 촬영" style={{ flex: 1, border: "none", outline: "none", font: "inherit", fontSize: 16, color: T.fgBase, background: "transparent" }} />
         <svg viewBox="0 0 24 24" fill="none" style={{ width: 22, height: 22, color: T.placeholder }}><circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.8" /><path d="M20 20L16.5 16.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
@@ -968,7 +1013,7 @@ function SpecPage() {
 
   return (
     <main style={{ maxWidth: 880, margin: "0 auto", padding: "56px 24px 0" }}>
-      <h1 style={{ fontSize: 44, fontWeight: 700, letterSpacing: "-0.5px", color: T.fgBase, margin: "0 0 12px" }}>아코디언 데모</h1>
+      <h1 className="page-h1" style={{ fontSize: 44, fontWeight: 700, letterSpacing: "-0.5px", color: T.fgBase, margin: "0 0 12px" }}>아코디언 데모</h1>
       <p style={{ margin: "0 0 24px", fontSize: 15, color: T.fgTertiary, lineHeight: 1.6 }}>긴 본문 더미 15개로 구성한 아코디언 목록입니다. 아래 토글로 자동 스크롤 동작을 바꿔가며 펼침·호버·스크롤을 확인하세요.</p>
 
       {/* 자동 스크롤 컨트롤 — 기능 ON/OFF + 모션 ON/OFF */}
@@ -1083,6 +1128,37 @@ function App() {
           100% { transform: scale(0.96); opacity: 0.55; }
         }
         @media (prefers-reduced-motion: reduce) { .page-rise, .subtab-rise { animation: none; } }
+
+        /* ── 반응형 ───────────────────────────── */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); }
+        .subtabs { display: flex; }
+        .subtabs button { flex: 1; }
+        .hamburger { display: none; }
+
+        @media (max-width: 760px) {
+          .gnb-nav { display: none !important; }
+          .hamburger { display: inline-flex !important; }
+          .gnb-cta { display: none !important; }
+          .grid-2, .grid-3 { grid-template-columns: 1fr !important; }
+          .grid-4 { grid-template-columns: repeat(2, 1fr) !important; }
+          .subtabs { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+          .subtabs::-webkit-scrollbar { display: none; }
+          .subtabs button { flex: none !important; padding-left: 14px !important; padding-right: 14px !important; white-space: nowrap; }
+          .page-h1 { font-size: 30px !important; }
+          .hero-copy { font-size: 19px !important; }
+          .slogan-copy { max-width: 100% !important; }
+          .dev-row { flex-wrap: wrap; }
+          .ctrl-card-row { flex-wrap: wrap; }
+          .pad-main { padding-left: 18px !important; padding-right: 18px !important; }
+        }
+
+        /* 모바일 드로어 */
+        .drawer-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 40; animation: fadeIn 200ms ease both; }
+        .drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 78%; max-width: 320px; background: #fff; z-index: 41; box-shadow: -8px 0 32px -12px rgba(0,0,0,0.3); animation: drawerIn 280ms cubic-bezier(0.22,0.61,0.36,1) both; overflow-y: auto; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes drawerIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
       `}</style>
 
       {/* 핸드오프용 모드 토글 (K-Bank 화면 외 컨트롤) */}
